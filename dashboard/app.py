@@ -5,8 +5,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import json
 import streamlit as st
 import pandas as pd
-from persona_engine.classifier import classify_ocean
-from persona_engine.hf_loader import load_hf_dataset, numeric_ocean_columns, map_ocean_record
+from persona_engine.classifier import classify_ocean, classify_persona_record
+from persona_engine.hf_loader import load_hf_dataset, OCEAN_FIELDS, ocean_profile_from_record
 from risk_engine.scoring import calculate_risk
 from agents.reviewers import review_scenario
 from accident_knowledge.loader import load_demo, load_uploaded_csv
@@ -49,55 +49,51 @@ with risk_tab:
     st.caption("점수는 S=5, L=4, E=4, 통제효과=0.25인 데모 가정입니다. 실측값이 아닙니다.")
 
 with persona_tab:
-    st.subheader("OCEAN 기반 기능적 분석 관점")
-    persona_path = Path(__file__).resolve().parents[1] / "data/sample/personas.json"
-    personas = json.loads(persona_path.read_text(encoding="utf-8"))
-    for p in personas:
-        role = classify_ocean(p["ocean"])
-        with st.expander(f'{p["persona_id"]} · {p["label"]} → {role["role"]}', expanded=True):
-            st.write("분석 초점:", role["focus"])
-            st.write("분류 점수(내부 규칙):", role["confidence"])
-            st.json(p["ocean"])
-    st.info("분류는 에이전트의 검토 관점을 배정할 뿐이며, 개인의 성격·사고확률·업무 적합성을 판단하지 않습니다. MBTI는 원본에 직접 존재한다고 가정하지 않습니다.")
-    st.markdown("#### Hugging Face 데이터셋 불러오기")
+    st.subheader("Hugging Face 페르소나 데이터")
+    st.markdown("기본 데이터셋에는 OCEAN 점수 열이 없을 수 있습니다. Extended 데이터셋에서 다섯 특성이 확인될 때만 OCEAN 규칙을 적용하며, 그렇지 않으면 직업·전문성 서술로 검토 관점을 분류합니다.")
     hf_id = st.text_input("Dataset ID", value="nvidia/Nemotron-Personas-Korea")
     hf_split = st.text_input("Split", value="train")
-    hf_limit = st.number_input("최대 로딩 행 수", min_value=100, max_value=50000, value=2000, step=100)
-    if st.button("데이터셋 불러오기"):
+    hf_limit = st.number_input("최대 로딩 행 수", min_value=50, max_value=10000, value=500, step=50)
+    if st.button("페르소나 데이터 불러오기"):
         try:
             frame = load_hf_dataset(hf_id, hf_split, limit=int(hf_limit))
-            st.session_state["hf_persona_frame"] = frame
-            st.success(f"{len(frame):,}개 행을 불러왔습니다. OCEAN 열을 아래에서 직접 지정하세요.")
+            st.session_state["hf_personas"] = frame
+            st.session_state.pop("persona_results", None)
+            st.success(f"{len(frame):,}개 샘플을 불러왔습니다. 이름·성별·연령·건강 등 개인/민감 속성은 화면 분석에서 제외했습니다.")
         except Exception as exc:
             st.error(f"데이터셋 로딩 실패: {exc}")
-    frame = st.session_state.get("hf_persona_frame")
+    frame = st.session_state.get("hf_personas")
     if frame is not None:
-        st.write("데이터 미리보기")
-        st.dataframe(frame.head(10), use_container_width=True)
-        candidates = numeric_ocean_columns(frame)
-        if len(candidates) >= 5:
-            st.markdown("#### OCEAN 열 매핑")
-            traits = ["openness","conscientiousness","extraversion","agreeableness","neuroticism"]
-            mapping = {}
-            for trait in traits:
-                aliases = [c for c in candidates if trait in c.lower() or trait[:3] in c.lower()]
-                default = aliases[0] if aliases else candidates[0]
-                mapping[trait] = st.selectbox(trait, candidates, index=candidates.index(default), key=f"ocean_{trait}")
-            if st.button("선택한 열로 기능 유형 분류"):
-                try:
-                    output = []
-                    for idx, row in frame.iterrows():
-                        profile = map_ocean_record(row, mapping)
-                        output.append({"row":int(idx), **classify_ocean(profile), **profile})
-                    result = pd.DataFrame(output)
-                    st.session_state["persona_results"] = result
-                except Exception as exc:
-                    st.error(f"분류 실패: {exc}")
+        st.write("안전 필터링 후 데이터 미리보기")
+        st.dataframe(frame.head(8), use_container_width=True)
+        available_ocean = [field for field in OCEAN_FIELDS if field in frame.columns]
+        if len(available_ocean) == 5:
+            st.success("OCEAN 5개 속성이 모두 확인되었습니다. 실제 값 파싱 후 분류합니다.")
         else:
-            st.warning("0~1 범위의 숫자형 열이 5개 미만입니다. 원본 데이터의 구조와 OCEAN 필드의 중첩 여부·값 범위를 확인해야 합니다.")
+            st.info(f"현재 데이터셋에서 OCEAN 필드 {len(available_ocean)}/5개 확인. OCEAN 점수 분류 대신 직업·전문성 텍스트 기반 기능 관점 분류를 적용합니다.")
+        if st.button("기능적 분석 관점 분류 실행"):
+            rows = []
+            for idx, row in frame.iterrows():
+                record = row.to_dict()
+                result = classify_persona_record(record)
+                rows.append({
+                    "row": int(idx),
+                    "role": result["role"],
+                    "focus": result["focus"],
+                    "confidence": result["confidence"],
+                    "method": result["method"],
+                    "occupation": record.get("occupation", ""),
+                    "professional_persona": record.get("professional_persona", "")
+                })
+            result_frame = pd.DataFrame(rows)
+            st.session_state["persona_results"] = result_frame
         if "persona_results" in st.session_state:
-            st.dataframe(st.session_state["persona_results"], use_container_width=True)
-            st.download_button("분류 결과 CSV 다운로드", st.session_state["persona_results"].to_csv(index=False).encode("utf-8-sig"), "persona_classification.csv", "text/csv")
+            result_frame = st.session_state["persona_results"]
+            st.dataframe(result_frame, use_container_width=True)
+            st.download_button("분류 결과 CSV 다운로드", result_frame.to_csv(index=False).encode("utf-8-sig"), "persona_review_lenses.csv", "text/csv")
+            st.caption("이 결과는 안전 검토 관점 배정용 실험적 분류이며, 실제 근로자 성격·사고확률·업무 적합성 평가가 아닙니다.")
+    else:
+        st.info("기본 데모 페르소나 4종은 외부 데이터 연결 없이도 Agent Control에서 사용할 수 있습니다.")
 
 with agent_tab:
     st.subheader("다중 에이전트 독립 검토")
@@ -113,16 +109,21 @@ with agent_tab:
 
 with ontology_tab:
     st.subheader("설비–공정–위험–사고–통제 온톨로지")
-    graph = build_graph(scenario)
-    st.graphviz_chart(graph_to_dot(graph), use_container_width=True)
-    st.write(f"노드 {graph.number_of_nodes()}개 · 관계 {graph.number_of_edges()}개")
-    st.caption("관계는 MVP 개념 스키마이며, 검증된 인과관계를 의미하지 않습니다.")
+    try:
+        accidents_for_graph = load_demo()
+        graph = build_graph(scenario, accidents_for_graph)
+        st.graphviz_chart(graph_to_dot(graph), use_container_width=True)
+        st.write(f"노드 {graph.number_of_nodes()}개 · 관계 {graph.number_of_edges()}개")
+    except Exception as exc:
+        st.error(f"온톨로지 그래프 생성 실패: {exc}")
+    st.caption("사고사례와 예방대책은 연결 후보로 표시합니다. 그래프의 연결은 통계적·물리적 인과관계가 검증되었다는 뜻이 아닙니다.")
 
 with accident_tab:
     st.subheader("산업재해 지식 데이터")
-    uploaded = st.file_uploader("출처가 확인된 KOSHA 등 CSV 업로드", type=["csv"])
+    uploaded = st.file_uploader("출처가 확인된 KOSHA CSV 업로드", type=["csv"])
     try:
         accidents = load_uploaded_csv(uploaded) if uploaded else load_demo()
+        st.write(f"총 {len(accidents):,}건")
         st.dataframe(accidents, use_container_width=True)
         st.caption("업로드 데이터는 현재 세션에서만 사용합니다. 원본 이용조건과 출처를 확인하십시오.")
     except Exception as exc:
@@ -135,7 +136,7 @@ with accident_tab:
 with eval_tab:
     st.subheader("검증 계획")
     st.markdown("""
-- **페르소나:** 군집 분리도, 재현성, 전문가 검토 일치도
+- **페르소나:** 데이터 필드 매핑 성공률, 분류 안정성, 전문가 검토 일치도
 - **위험 탐지:** Precision, Recall, F1, PR-AUC, 치명위험 누락률
 - **경보 운영:** 오경보율, 확인 소요시간, 야간 관리자 경보량
 - **현장 효용:** 위험 발견률과 조치 리드타임의 개선 여부
