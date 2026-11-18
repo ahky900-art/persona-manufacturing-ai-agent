@@ -6,7 +6,7 @@ import json
 import streamlit as st
 import pandas as pd
 from persona_engine.classifier import classify_ocean, classify_persona_record
-from persona_engine.hf_loader import load_hf_dataset, OCEAN_FIELDS, ocean_profile_from_record
+from persona_engine.hf_loader import load_hf_dataset, load_uploaded_persona_csv, OCEAN_FIELDS
 from risk_engine.scoring import calculate_risk
 from agents.reviewers import review_scenario
 from accident_knowledge.loader import load_demo, load_uploaded_csv
@@ -51,19 +51,30 @@ with risk_tab:
 with persona_tab:
     st.subheader("Hugging Face 페르소나 데이터")
     st.markdown("기본 데이터셋에는 OCEAN 점수 열이 없을 수 있습니다. Extended 데이터셋에서 다섯 특성이 확인될 때만 OCEAN 규칙을 적용하며, 그렇지 않으면 직업·전문성 서술로 검토 관점을 분류합니다.")
-    hf_id = st.text_input("Dataset ID", value="nvidia/Nemotron-Personas-Korea")
+    extended_upload = st.file_uploader("NVIDIA Nemotron-Personas-Korea-Extended CSV (선택)", type=["csv"], key="extended_persona_csv")
+    if extended_upload is not None:
+        try:
+            frame = load_uploaded_persona_csv(extended_upload)
+            st.session_state["hf_personas"] = frame
+            st.session_state["persona_source"] = "Nemotron-Personas-Korea-Extended CSV"
+            st.success("Extended CSV를 불러왔습니다. 안전 필터링 후 OCEAN 필드를 확인합니다.")
+        except Exception as exc:
+            st.error(f"Extended CSV 로딩 실패: {exc}")
+    hf_id = st.text_input("기본 Hugging Face Dataset ID", value="nvidia/Nemotron-Personas-Korea")
     hf_split = st.text_input("Split", value="train")
     hf_limit = st.number_input("최대 로딩 행 수", min_value=50, max_value=10000, value=500, step=50)
     if st.button("페르소나 데이터 불러오기"):
         try:
             frame = load_hf_dataset(hf_id, hf_split, limit=int(hf_limit))
             st.session_state["hf_personas"] = frame
+            st.session_state["persona_source"] = "Hugging Face base dataset"
             st.session_state.pop("persona_results", None)
             st.success(f"{len(frame):,}개 샘플을 불러왔습니다. 이름·성별·연령·건강 등 개인/민감 속성은 화면 분석에서 제외했습니다.")
         except Exception as exc:
             st.error(f"데이터셋 로딩 실패: {exc}")
     frame = st.session_state.get("hf_personas")
     if frame is not None:
+        st.caption("데이터 출처: " + st.session_state.get("persona_source", "업로드/세션 데이터"))
         st.write("안전 필터링 후 데이터 미리보기")
         st.dataframe(frame.head(8), use_container_width=True)
         available_ocean = [field for field in OCEAN_FIELDS if field in frame.columns]
