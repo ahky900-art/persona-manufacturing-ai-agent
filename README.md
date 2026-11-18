@@ -1,75 +1,88 @@
 # Persona Manufacturing AI Safety Agent
 
-제조 현장의 산업재해 지식과 공정·설비 상태를 연결하고, 서로 다른 분석 관점의 안전 에이전트가 위험요인을 교차 검토하는 연구용 MVP입니다.
+합성 페르소나의 직무·전문성 맥락을 제조업 위험 검토 관점으로 연결하고, KOSHA 사고사례와 refractory 설비별 손상 온톨로지를 이용해 현장 위험 경로와 관측 후보를 제시하는 연구용 MVP입니다.
 
-> **안전 고지:** 이 프로젝트는 안전관리자의 판단을 보조하는 프로토타입입니다. MBTI 또는 페르소나로 근로자 개인의 사고 가능성을 예측하지 않습니다. 기본 화면의 데이터·점수·알림은 모두 데모이며 실제 설비 감시나 법정 위험성평가를 대체하지 않습니다.
+> **안전 고지:** Persona는 검토 관점을 제안할 뿐 근로자 개인의 성격·숙련도·사고확률을 예측하지 않습니다. 위험 경로와 관측 신호는 현장 검증 전 가설이며 실제 안전 감시나 법정 위험성평가를 대체하지 않습니다.
 
-## 핵심 흐름
-
-1. 페르소나 데이터의 OCEAN 특성을 기반으로 기능적 분석 관점을 구성
-2. KOSHA 사고사례 CSV 또는 제공된 데모 사례를 위험 지식으로 활용
-3. 분석·절차·현장상황·작업통제 에이전트가 독립적으로 위험요인을 검토
-4. 설비–공정–위험요인–사고–통제조치 관계를 온톨로지 그래프로 표현
-5. 심각도·가능성·노출·통제효과를 이용해 데모 위험점수를 계산하고 경보 표시
-
-## 빠른 실행
-
-Python 3.10 이상 권장.
+## 대시보드 실행
 
 ```bash
 python -m venv .venv
-# Windows
-.venv\\Scripts\\activate
-# macOS/Linux
-source .venv/bin/activate
+# Windows: .venv\\Scripts\\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run dashboard/app.py
 ```
 
-## 데이터 연결
+## 대시보드 탭
 
-### Hugging Face 페르소나 데이터
-- 기본 데모는 로컬 샘플을 사용합니다.
-- 실제 데이터 로딩은 `HF_DATASET_ID` 환경변수로 데이터셋 ID를 지정한 뒤 Persona Lab에서 실행합니다.
-- NVIDIA Nemotron-Personas-Korea 데이터에는 OCEAN 관련 속성이 포함될 수 있으나, MBTI 라벨이 직접 제공된다고 가정하지 않습니다.
-- 개인의 건강·성별·연령 등 민감하거나 보호가 필요한 속성을 근로자 위험 예측 변수로 사용하지 않습니다.
+1. 전체 구조: Persona → 사고 포커스 → 설비 위험경로 → 관측 후보
+2. Persona 분류 기준: Hugging Face 데이터 필드, 가중치, 역할별 키워드와 분류 근거
+3. 사고 포커스: KOSHA 제목·개요·원인·예방대책에서 위험 태그 다중 추출
+4. 산업현장 Risk: refractory 저장소의 11개 설비 유형별 인자→상태→메커니즘→손상→취약부위 경로
+5. 작업자 안전 Risk: 끼임·추락·충돌·화재·질식·감전 등 인명 위험과 핵심 통제 체크
+6. 온톨로지 경로: 선택한 설비·위험 경로를 그래프로 표시
+7. 검증·출처: 모델 한계, 평가계획, 데이터 출처
 
-### KOSHA 사고사례
-- KOSHA에서 내려받은 CSV를 Accident Knowledge 탭에서 업로드할 수 있습니다.
-- 원본 출처·이용조건·수집일을 함께 기록하고, 원문을 임의로 수정하거나 재배포하지 마십시오.
-- 컬럼명이 다른 경우 현재 MVP의 자동 매핑이 실패할 수 있습니다. 이때 CSV 헤더를 확인해 `accident_knowledge/loader.py`의 후보 컬럼을 보완해야 합니다.
-- 데모 사례는 실제 KOSHA 원문이 아닙니다.
+## 1. Hugging Face Persona 분류 기준
 
-## 위험점수
+기본 Nemotron-Personas-Korea는 26개 필드로 구성되고 OCEAN 점수는 기본 스키마에 포함되지 않습니다. NVIDIA Nemotron-Personas-Korea-Extended 설명은 51개 필드와 OCEAN 5개 문자열 속성을 제시합니다.
 
-초기 연구용 지표:
+분류는 직무 관련 필드만 사용합니다.
+- occupation: 가중치 4
+- professional_persona: 가중치 4
+- skills_and_expertise_list: 가중치 3
+- skills_and_expertise: 가중치 2
+- detailed_persona: 가중치 2
+- career_goals_and_ambitions: 가중치 1
+- persona: 가중치 1
 
-`Risk = 100 × (S/5) × (L/5) × (E/5) × (1-C)`
+필드별 일치 키워드와 가중치를 합산해 공정·원료·재료, 설비·정비, 전기·계장, 생산·운전, 안전·환경, 물류·인양, 품질·검사, 관리·감독 역할을 다중 분류합니다. 결과에는 매칭된 필드와 키워드가 표시됩니다.
 
-- S: 심각도 1–5
-- L: 발생 가능성 1–5
-- E: 노출 수준 1–5
-- C: 통제 효과 0–1
+OCEAN, MBTI, 성별, 연령, 건강, 가족, 소득, 지역 정보는 안전 역할 분류 및 위험점수에 사용하지 않습니다. 스포츠·예술·여행·요리 등 비직무 페르소나 필드도 직무 분류에서 제외합니다.
 
-임계치는 데모 설정이며 실제 사업장 기준으로 보정해야 합니다. LOTO 미실시 상태에서 정비하는 등 치명적 통제 실패는 종합점수와 별도로 즉시 확인하도록 설계해야 합니다.
+## 2. 사고 포커스
 
-## 프로젝트 구조
+KOSHA 제조업 사고사례 CSV의 원본 컬럼을 다음과 같이 정규화합니다.
+- BBSCTT_SJ_NM: 사고 제목
+- BBSCTT_CN: 사고 발생 개요
+- DSSTR_INDUCT_FCTR_CN: 사고 발생 원인
+- RSKNSS_DCRS_CNTRPLN_CN: 재해예방 대책
 
-- `persona_engine/`: OCEAN 입력과 기능적 분석 관점
-- `agents/`: 다중 안전 검토 에이전트
-- `accident_knowledge/`: 사고사례 로딩 및 검색
-- `ontology/`: 관계 그래프 생성
-- `risk_engine/`: 위험점수와 경보
-- `dashboard/`: Streamlit 대시보드
-- `data/sample/`: 합성 데모 데이터
-- `tests/`: 기본 로직 테스트
+텍스트에서 끼임·협착, 추락, 충돌·낙하물, 화재·폭발·화상, 질식·중독, 감전·전기, 근골격·수작업 태그를 다중 추출합니다. 이는 사례 검색·검토용 규칙 기반 태깅이며 사고확률 추정이 아닙니다.
 
-## 검증상 한계와 다음 단계
+## 3. 산업설비 위험 카탈로그
 
-- 사고사례만으로 정상상태 대비 사고확률을 학습할 수 없습니다. 정상 운전·비사고 데이터와 센서 이력이 필요합니다.
-- 역사적 사고사례는 위험요인 탐색과 통제조치 추천 지식으로 사용하고, 실시간 위험 감지는 PLC·센서·작업허가·LOTO 등의 현장 데이터로 별도 검증해야 합니다.
-- 페르소나는 위험의 진실성을 결정하지 않고, 검토 관점과 질문의 다양성을 제공하는 역할입니다.
-- 운영 전 현장 안전전문가 검토, 임계치 보정, 누락·오경보 평가, 접근통제와 감사로그가 필요합니다.
+`risk_engine/industrial_risk_catalog.py`는 `ahky900-art/refractory`의 `ontology-enhanced.js` 및 `maintenance-planning.js`를 바탕으로 다음 11개 설비의 위험경로를 구조화합니다.
 
-## License / attribution
-코드와 데이터의 라이선스는 각 출처의 조건을 따릅니다. KOSHA 및 Hugging Face 데이터셋의 라이선스·이용조건을 별도로 확인하십시오.
+래들, 로터리 킬른, RFCC 재생기, 소각로, 용융로형 소각로, 화격자형 소각로, 가열로, 고로, 2차 개질로, Claus Thermal Reactor, CFB 보일러.
+
+경로 구조:
+운전/정비 인자 → 공정 상태 변화 → 물리·화학 메커니즘 → 예상 손상 → 취약 부위 → 관측 신호 후보.
+
+관측 신호는 실제 센서가 연결된 값이 아닙니다. 현장 계측·검사 데이터에서 가용성, 시간 선행성, 손상과의 연관성을 검증해야 합니다.
+
+## 4. 설비 위험과 작업자 안전 위험 분리
+
+설비 건전성 위험(용손·침식·균열·박락·쉘 핫스팟)과 인명 안전 위험(끼임·추락·충돌·화상·질식·감전)은 별도 평가합니다. 예를 들어 정비 중 LOTO 미확인은 복합 위험점수와 무관한 핵심 통제 경보 후보입니다. 두 위험 점수를 임의로 합산하지 않습니다.
+
+## 5. 데이터 출처
+
+- NVIDIA base: https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea
+- NVIDIA Extended: https://catalog.ngc.nvidia.com/orgs/nvidia/nemotron-personas/resources/nemotron-personas-dataset-ko_kr/-
+- KOSHA 제조업 사고사례: https://www.data.go.kr/data/15163146/fileData.do
+- 설비 위험 온톨로지: https://github.com/ahky900-art/refractory/blob/main/ontology-enhanced.js
+- 설비 정비 프로파일: https://github.com/ahky900-art/refractory/blob/main/maintenance-planning.js
+
+## 6. 검증상 한계
+
+- 합성 페르소나는 실제 작업자 행동·숙련도·성격 데이터가 아닙니다.
+- 사고사례는 사고 후 기록이며 정상상태 분포나 발생확률을 제공하지 않습니다.
+- 설비 메커니즘과 관측신호 연결은 검증 전 가설입니다.
+- 정상 운전·비사고 이력, PLC·센서·작업허가·LOTO 데이터, 검사 결과, 현장 전문가 라벨이 필요합니다.
+- 검증은 역할 분류 Macro-F1, 사고 태깅 Macro-F1, 위험탐지 PR-AUC/Recall/오경보율, 치명위험 누락률, 관리자 응답시간으로 수행합니다.
+- 실제 운영 전 산업안전 전문가 검토, 사업장 위험성평가 기준 보정, 인증·권한·감사로그가 필요합니다.
+
+## 라이선스 및 출처 준수
+
+각 데이터셋·공공데이터의 현재 라이선스, 출처표시, 변경·재배포 조건을 확인하십시오. KOSHA 원본 데이터는 원문을 임의 변경하지 말고, 분석용 정규화 결과를 별도 파생 데이터로 관리하십시오.
