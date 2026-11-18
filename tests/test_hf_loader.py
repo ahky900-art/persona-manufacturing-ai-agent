@@ -31,3 +31,19 @@ def test_unknown_persona_does_not_invent_ocean_traits():
     result = classify_persona_record({"persona": "일반적인 생활 방식"})
     assert result["role"] == "General"
     assert result["confidence"] == "low"
+
+def test_persona_sanitizer_excludes_demographic_and_health_fields():
+    from persona_engine.hf_loader import sanitize_persona_frame
+    frame = pd.DataFrame({
+        "professional_persona":["공정 엔지니어"],
+        "openness":["0.8"],
+        "age":[35],
+        "sex":["여자"],
+        "blood_pressure_status":["정상"]
+    })
+    safe = sanitize_persona_frame(frame)
+    assert "professional_persona" in safe.columns
+    assert "openness" in safe.columns
+    assert "age" not in safe.columns
+    assert "sex" not in safe.columns
+    assert "blood_pressure_status" not in safe.columns
