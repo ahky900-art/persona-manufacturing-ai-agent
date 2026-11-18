@@ -32,6 +32,20 @@ def load_hf_dataset(dataset_id: str, split: str = "train", token: str | None = N
     safe_columns = [col for col in frame.columns if col in SAFE_PERSONA_FIELDS]
     return frame.loc[:, safe_columns].copy()
 
+def sanitize_persona_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Keep only approved work/persona fields, including from user-uploaded Extended CSVs."""
+    return frame.loc[:, [col for col in frame.columns if col in SAFE_PERSONA_FIELDS]].copy()
+
+def load_uploaded_persona_csv(file) -> pd.DataFrame:
+    last_error = None
+    for encoding in ("utf-8-sig", "cp949", "euc-kr"):
+        try:
+            file.seek(0)
+            return sanitize_persona_frame(pd.read_csv(file, encoding=encoding))
+        except UnicodeDecodeError as exc:
+            last_error = exc
+    raise ValueError(f"CSV 문자 인코딩을 판별하지 못했습니다(UTF-8/CP949 시도). {last_error}")
+
 def parse_ocean_value(value) -> float | None:
     """Parse explicit numeric values or descriptive OCEAN labels; unknown text stays unknown."""
     if value is None or (isinstance(value, float) and pd.isna(value)):
