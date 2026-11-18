@@ -9,7 +9,7 @@ ROLE_DEFINITIONS = {
  "quality_inspection":{"label":"품질·검사·분석","focus":"검사·시험·측정·NDT·품질편차","incident_lens":"결함 조기발견 실패·검사 누락·측정오류","keywords":["품질","검사","시험","분석","측정","비파괴","NDT","품질관리","실험실","laboratory","quality","inspection","testing"],"questions":["검사 데이터의 위치·시간·단위·교정상태가 일치하는가?","두께·균열·온도·진동 추세에서 이상점이 있는가?"]},
  "supervision_management":{"label":"관리·감독·인력운영","focus":"작업조정·인력·교대·동시작업·도급·구역통제","incident_lens":"감독 공백·작업 간섭·의사소통·허가 누락","keywords":["관리자","감독","팀장","공장장","생산관리","현장관리","공사관리","프로젝트관리","인사","교육","supervisor","manager","management","project"],"questions":["작업책임자·감시인·신호수가 지정됐는가?","동시작업과 도급작업 간 위험정보가 공유됐는가?"]}
 }
-FIELD_WEIGHTS={"occupation":4,"professional_persona":4,"skills_and_expertise_list":3,"skills_and_expertise":2,"career_goals_and_ambitions":1,"persona":1}
+FIELD_WEIGHTS={"occupation":4,"professional_persona":4,"skills_and_expertise_list":3,"skills_and_expertise":2,"detailed_persona":2,"career_goals_and_ambitions":1,"persona":1}
 EXCLUDED_FIELDS=["sports_persona","arts_persona","travel_persona","culinary_persona","family_persona","finance_persona","healthcare_persona","hobbies_and_interests","cultural_background","sex","age","health","income","province","district","country","OCEAN"]
 
 def classify_work_persona(record):
