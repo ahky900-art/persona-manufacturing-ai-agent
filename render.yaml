@@ -13,3 +13,21 @@ services:
         value: 3.11.9
       - key: KOSHA_SERVICE_KEY
         sync: false
+  - type: web
+    name: persona-manufacturing-kosha-api
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.kosha_service:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: KOSHA_SERVICE_KEY
+        sync: false
+      - key: KOSHA_API_URL
+        value: https://api.odcloud.kr/api/15163146/v1/uddi:3c9aaf7a-965f-4531-9f31-d1049e13e115
+      - key: CORS_ORIGINS
+        value: https://ahky900-art.github.io
