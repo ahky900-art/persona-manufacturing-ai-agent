@@ -3,10 +3,10 @@ import pandas as pd
 
 DEMO_PATH = Path(__file__).resolve().parents[1] / "data" / "sample" / "accidents.csv"
 COLUMN_CANDIDATES = {
- "title": ["accident_title", "사고명", "재해명", "제목", "BBSCTT_SJ_NM"],
- "description": ["description", "재해개요", "사고내용", "재해내용", "BBSCTT_CN"],
- "cause": ["cause", "발생원인", "재해원인", "원인", "DSSTR_INDUCT_FCTR_CN"],
- "prevention": ["prevention", "예방대책", "재발방지대책", "대책", "RSKNSS_DCRS_CNTRPLN_CN"],
+ "title": ["accident_title", "사고명", "재해명", "제목", "재해구분(제목)", "BBSCTT_SJ_NM"],
+ "description": ["description", "재해개요", "사고내용", "재해내용", "재해발생 개요(내용)", "BBSCTT_CN"],
+ "cause": ["cause", "발생원인", "재해원인", "원인", "재해발생 원인", "DSSTR_INDUCT_FCTR_CN"],
+ "prevention": ["prevention", "예방대책", "재발방지대책", "대책", "재해예방 대책", "RSKNSS_DCRS_CNTRPLN_CN"],
  "equipment": ["equipment", "기인물", "설비명", "관련설비", "작업설비"],
  "hazard": ["hazard", "위험유형", "재해형태", "재해유형", "발생형태"]
 }
