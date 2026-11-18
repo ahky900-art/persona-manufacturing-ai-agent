@@ -4,7 +4,7 @@
 
 > **안전 고지:** Persona는 검토 관점을 제안할 뿐 근로자 개인의 성격·숙련도·사고확률을 예측하지 않습니다. 위험 경로와 관측 신호는 현장 검증 전 가설이며 실제 안전 감시나 법정 위험성평가를 대체하지 않습니다.
 
-## 대시보드 실행
+## 웹 대시보드 (GitHub Pages)\n\n정적 웹 대시보드: [Persona Manufacturing AI Safety Agent](https://ahky900-art.github.io/persona-manufacturing-ai-agent/)\n\nGitHub 저장소의 `docs/index.html`이 Pages용 화면이며, Streamlit Python 앱과는 별도입니다. Pages 배포를 처음 활성화할 때 저장소 Settings → Pages → Build and deployment → Source에서 **GitHub Actions**를 선택하십시오.\n\n## 로컬 Streamlit 대시보드 실행
 
 ```bash
 python -m venv .venv
