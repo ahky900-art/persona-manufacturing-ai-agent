@@ -102,7 +102,30 @@ with tabs[1]:
 with tabs[2]:
     st.subheader("KOSHA 사고사례 → 사고 포커스")
     st.markdown("사고 제목·발생 개요·발생 원인·예방대책의 텍스트에서 위험 키워드를 다중 태깅합니다. 사례의 사고 유형을 분류하는 규칙이며 발생확률 모델은 아닙니다.")
-    upload_acc=st.file_uploader("KOSHA 제조업 사고사례 CSV 업로드",type=["csv"],key="kosha_csv")
+    st.markdown("#### 공공데이터포털 API 연결")
+    st.caption("API 인증키는 코드에 저장하지 않습니다. Render/Streamlit Secrets에 KOSHA_API_URL, KOSHA_SERVICE_KEY, 선택적으로 KOSHA_API_PARAMS_JSON을 등록하세요.")
+    try:
+        from accident_knowledge.openapi_client import fetch_public_api, load_env_params
+        import os
+        api_ready=bool(os.getenv("KOSHA_API_URL") and os.getenv("KOSHA_SERVICE_KEY"))
+        if api_ready:
+            if st.button("실제 산재 API 조회",key="fetch_kosha_api"):
+                try:
+                    api_frame,api_meta=fetch_public_api(params=load_env_params())
+                    st.session_state["kosha_api_frame"]=api_frame
+                    st.session_state["kosha_api_meta"]=api_meta
+                    st.success(f"API 응답 성공: {len(api_frame):,}건 · {api_meta['format']}")
+                except Exception as api_exc:
+                    st.error(f"API 조회 실패: {api_exc}")
+        else:
+            st.warning("API 연결 설정이 아직 완료되지 않았습니다. 제공해주신 URL은 공공데이터포털의 활용신청 계정 화면이며, 실제 API 요청주소가 아닙니다. API 명세의 '요청주소'와 서비스키를 서버 환경변수로 등록해야 합니다.")
+        if "kosha_api_frame" in st.session_state:
+            api_frame=st.session_state["kosha_api_frame"]
+            st.metric("API에서 가져온 행",len(api_frame))
+            st.caption("응답 형식: "+str(st.session_state.get("kosha_api_meta",{}).get("format","")))
+    except Exception as api_setup_exc:
+        st.info(f"API 연결 모듈 초기화: {api_setup_exc}")
+    upload_acc=st.file_uploader("KOSHA 제조업 사고사례 CSV 업로드(대체 경로)",type=["csv"],key="kosha_csv")
     try:
         cases=load_uploaded_csv(upload_acc) if upload_acc else load_demo()
     except Exception as exc:
