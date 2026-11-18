@@ -37,7 +37,7 @@ def parse_ocean_value(value) -> float | None:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
     text = str(value).strip()
-    matches = re.findall(r"(?<![A-Za-z])(?:0?\\.\\d+|1(?:\\.0+)?|[1-9]\\d?)(?![A-Za-z])", text)
+    matches = re.findall(r"(?<![A-Za-z])(?:0?\.\d+|1(?:\.0+)?|[1-9]\d?)(?![A-Za-z])", text)
     for token in matches:
         try:
             number = float(token)
