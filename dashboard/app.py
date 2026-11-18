@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 from persona_engine.hf_loader import load_hf_dataset, load_uploaded_persona_csv, OCEAN_FIELDS
 from persona_engine.role_taxonomy import ROLE_DEFINITIONS, classify_work_persona
-from accident_knowledge.loader import load_demo, load_uploaded_csv
+from accident_knowledge.loader import load_demo, load_uploaded_csv, normalize_columns
 from accident_knowledge.focus_classifier import classify_accident_focus, RULES
 from risk_engine.industrial_risk_catalog import EQUIPMENT, PATHS, WORK_SAFETY
 from risk_engine.scoring import calculate_risk
