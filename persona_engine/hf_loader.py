@@ -7,7 +7,7 @@ import pandas as pd
 OCEAN_FIELDS = ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism")
 SAFE_PERSONA_FIELDS = {
     "uuid", "professional_persona", "sports_persona", "arts_persona", "travel_persona",
-    "culinary_persona", "family_persona", "persona", "cultural_background",
+    "culinary_persona", "family_persona", "persona", "detailed_persona", "cultural_background",
     "skills_and_expertise", "skills_and_expertise_list", "hobbies_and_interests",
     "hobbies_and_interests_list", "career_goals_and_ambitions", "occupation",
     *OCEAN_FIELDS
