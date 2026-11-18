@@ -70,7 +70,7 @@ KOSHA 제조업 사고사례 CSV의 원본 컬럼을 다음과 같이 정규화�
 
 - NVIDIA base: https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea
 - NVIDIA Extended: https://catalog.ngc.nvidia.com/orgs/nvidia/nemotron-personas/resources/nemotron-personas-dataset-ko_kr/-
-- KOSHA 제조업 사고사례: https://www.data.go.kr/data/15163146/fileData.do
+- KOSHA 실제 산업재해 사례(업무상 사고사례) OpenAPI: https://www.data.go.kr/data/15163146/fileData.do\n  - ODCloud Base URL: `https://api.odcloud.kr/api`\n  - Swagger: `https://infuser.odcloud.kr/oas/docs?namespace=15163146/v1`\n  - Dataset API path: `/15163146/v1/uddi:3c9aaf7a-965f-4531-9f31-d1049e13e115`\n  - 인증키는 `KOSHA_SERVICE_KEY` 환경변수로만 관리하고, 요청주소는 `KOSHA_API_URL`로 덮어쓸 수 있습니다.\n  - 기본 조회는 `page=1`, `perPage=100`; 추가 요청변수는 `KOSHA_API_PARAMS_JSON`에 JSON 객체로 지정합니다.
 - 설비 위험 온톨로지: https://github.com/ahky900-art/refractory/blob/main/ontology-enhanced.js
 - 설비 정비 프로파일: https://github.com/ahky900-art/refractory/blob/main/maintenance-planning.js
 
