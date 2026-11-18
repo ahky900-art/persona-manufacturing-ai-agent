@@ -118,24 +118,24 @@ with tabs[2]:
                 except Exception as api_exc:
                     st.error(f"API 조회 실패: {api_exc}")
         else:
-            st.warning("API 연결 설정이 아직 완료되지 않았습니다. 제공해주신 URL은 공공데이터포털의 활용신청 계정 화면이며, 실제 API 요청주소가 아닙니다. API 명세의 '요청주소'와 서비스키를 서버 환경변수로 등록해야 합니다.")
+            st.warning("API 연결 설정이 아직 완료되지 않았습니다. Render의 이 서비스 Environment에 KOSHA_SERVICE_KEY를 등록하면 실제 API 조회가 활성화됩니다. 인증키는 코드나 브라우저에 입력하지 마십시오.")
         if "kosha_api_frame" in st.session_state:
             api_frame=st.session_state["kosha_api_frame"]
             st.metric("API에서 가져온 행",len(api_frame))
             st.caption("응답 형식: "+str(st.session_state.get("kosha_api_meta",{}).get("format","")))
     except Exception as api_setup_exc:
         st.info(f"API 연결 모듈 초기화: {api_setup_exc}")
-    upload_acc=st.file_uploader("KOSHA 제조업 사고사례 CSV 업로드(대체 경로)",type=["csv"],key="kosha_csv")
+    upload_acc=st.file_uploader("CSV 대체자료 업로드 (API 장애 시에만 사용)",type=["csv"],key="kosha_csv")
     try:
-        if upload_acc is not None:
-            cases=load_uploaded_csv(upload_acc)
-            case_source="업로드 CSV"
-        elif "kosha_api_frame" in st.session_state:
+        if "kosha_api_frame" in st.session_state:
             cases=normalize_columns(st.session_state["kosha_api_frame"])
             case_source="KOSHA 실제 API"
+        elif upload_acc is not None:
+            cases=load_uploaded_csv(upload_acc)
+            case_source="CSV 대체자료"
         else:
             cases=load_demo()
-            case_source="내장 예시 데이터"
+            case_source="내장 예시 데이터 (API 조회 전)"
     except Exception as exc:
         st.error(f"사고 데이터 로딩 오류: {exc}")
         cases=load_demo()
