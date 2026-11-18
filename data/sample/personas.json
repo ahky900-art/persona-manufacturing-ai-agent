@@ -1,0 +1,6 @@
+[
+  {"persona_id":"P-001","label":"Analytical","ocean":{"openness":0.90,"conscientiousness":0.75,"extraversion":0.30,"agreeableness":0.45,"neuroticism":0.35},"focus":"원인·메커니즘·이상 징후"},
+  {"persona_id":"P-002","label":"Procedural","ocean":{"openness":0.40,"conscientiousness":0.95,"extraversion":0.45,"agreeableness":0.65,"neuroticism":0.25},"focus":"작업허가·LOTO·표준 준수"},
+  {"persona_id":"P-003","label":"Situational","ocean":{"openness":0.65,"conscientiousness":0.70,"extraversion":0.55,"agreeableness":0.90,"neuroticism":0.50},"focus":"작업자 보호·환경·인수인계"},
+  {"persona_id":"P-004","label":"Control","ocean":{"openness":0.45,"conscientiousness":0.85,"extraversion":0.90,"agreeableness":0.50,"neuroticism":0.30},"focus":"작업구역 통제·감독·동시작업"}
+]
