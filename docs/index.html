@@ -5,8 +5,8 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{background:#12233d;color:white;padding:26px max(22px,calc((100vw - 1200px)/2)) 22px}header .eyebrow{font-size:12px;letter-spacing:.12em;color:#a9c6f2;font-weight:700}h1{margin:7px 0;font-size:clamp(24px,3vw,34px)}header p{margin:4px 0;color:#d2dced;max-width:850px}
 main{max-width:1200px;margin:24px auto;padding:0 18px 60px}.notice{background:#fff7e6;border:1px solid #f0d79a;border-radius:10px;padding:12px 15px;color:#684900;margin-bottom:18px}
-nav{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0}nav button,.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:650}nav button.active,.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
-section.panel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:22px;box-shadow:var(--shadow)}section.panel.active{display:block}
+nav{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0}nav button,nav a,.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:650}nav button.active,.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+section.panel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:22px;box-shadow:var(--shadow)}section.panel.active{display:block}section.panel:target{display:block;scroll-margin-top:18px}nav a{display:inline-block;text-decoration:none}
 h2{font-size:22px;margin:0 0 6px}h3{font-size:16px;margin:0 0 8px}.sub{color:var(--muted);margin:0 0 18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:10px;padding:14px;background:white}.card p{margin:6px 0;color:var(--muted)}.kpi{font-size:28px;font-weight:750}.tag{display:inline-block;padding:3px 8px;border-radius:20px;background:var(--blue2);color:var(--blue);font-size:12px;margin:3px 3px 0 0}
 label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd3df;border-radius:8px;font:inherit;background:white}textarea{min-height:100px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.result{margin-top:14px;padding:14px;background:#f6f8fb;border-radius:9px;border:1px solid var(--line)}.bar{height:8px;background:#e8edf4;border-radius:9px;overflow:hidden;margin:7px 0}.bar span{display:block;height:100%;background:#356ac0}.small{font-size:12px;color:var(--muted)}.risk{border-left:4px solid #d39a27}.risk strong{color:#7c5100}.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}.chain span{background:#edf2f8;padding:8px 10px;border-radius:7px}.chain b{color:var(--muted)}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:9px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f6f8fb}.hidden{display:none}
 @media(max-width:700px){.row{grid-template-columns:1fr}section.panel{padding:15px}header{padding:22px 18px}}
@@ -18,7 +18,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
 <div class="notice"><b>중요한 한계:</b> 이 페이지는 GitHub Pages에서 실행되는 정적 분석 데모입니다. 실시간 PLC·센서·작업자 위치 데이터에 연결되어 있지 않으며, 표시된 위험 경로는 현장 검증 전의 조건부 가설입니다. Persona로 개인의 사고확률을 예측하지 않습니다.</div>
-<nav id="tabs"><button class="active" data-tab="overview">개요</button><button data-tab="persona">Persona 분류</button><button data-tab="accident">사고 포커스</button><button data-tab="equipment">산업설비 Risk</button><button data-tab="safety">작업자 안전</button><button data-tab="ontology">온톨로지 그래프</button><button data-tab="method">검증·출처</button></nav>
+<nav id="tabs"><button class="active" data-tab="overview">개요</button><button data-tab="persona">Persona 분류</button><button data-tab="accident">사고 포커스</button><button data-tab="equipment">산업설비 Risk</button><button data-tab="safety">작업자 안전</button><a href="#ontology" aria-label="온톨로지 그래프 바로 열기">온톨로지 그래프</a><button data-tab="method">검증·출처</button></nav>
 <section id="overview" class="panel active"><h2>분석 파이프라인</h2><p class="sub">합성 인물 특성으로 위험도를 계산하는 것이 아니라, 전문성에 따라 검토할 관점을 나누고 실제 설비·작업 데이터로 위험을 확인합니다.</p>
 <div class="chain"><span>Hugging Face Persona</span><b>→</b><span>직무 근거 분류</span><b>→</b><span>KOSHA 사고 포커스</span><b>→</b><span>설비 온톨로지</span><b>→</b><span>관측 후보·현장 검토</span></div>
 <div class="grid"><div class="card"><div class="small">기능적 Persona 역할</div><div class="kpi">8</div><p>직무·전문성 키워드 기반 다중 분류</p></div><div class="card"><div class="small">사고 포커스 태그</div><div class="kpi">7</div><p>사고 서술에서 위험유형 추출</p></div><div class="card"><div class="small">산업설비 프로파일</div><div class="kpi">11</div><p>Refractory 저장소 기반 설비군</p></div><div class="card"><div class="small">실시간 데이터 연동</div><div class="kpi">0</div><p>현재는 정적 데모, 실시간 감지 아님</p></div></div>
@@ -26,7 +26,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <div class="card" style="margin-top:16px;border-color:#9bb5dc;background:#f7faff">
 <h3>온톨로지 지식 그래프</h3>
 <p>Hugging Face → Persona → 산재 유형 → 산업현장 Risk의 노드와 엣지를 한 화면에서 탐색합니다.</p>
-<button class="btn primary" id="openOntology">온톨로지 그래프 열기</button>
+<a class="btn primary" id="openOntology" href="#ontology">온톨로지 그래프 바로 열기</a>
 </div></section>
 
 <section id="persona" class="panel"><h2>Hugging Face Persona 분류 기준</h2><p class="sub">직무 맥락에 근거해 8개 기능적 검토 역할을 다중 분류합니다. 샘플 문장을 입력해 키워드 매칭이 어떻게 작동하는지 시험할 수 있습니다.</p>
@@ -142,7 +142,7 @@ const safety=[
 ["밀폐공간·덕트·호퍼","산소결핍·유해가스·매몰","가스측정 미실시, 환기 중단, 격리 미흡","산소·유해가스 측정, 환기·격리, 감시인·구조계획","가스측정 미확인 또는 가스 경보"],
 ["지게차·로더 운행","충돌·끼임","보행자·차량 동선 중첩, 후진 사각, 유도자 부재","동선 분리, 속도·후진경보, 유도자, 운행점검","보행자-차량 위험구역 동시 점유"]];
 const $=id=>document.getElementById(id);
-document.getElementById("openOntology")?.addEventListener("click",()=>document.querySelector('nav button[data-tab="ontology"]')?.click());
+
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));document.querySelectorAll("section.panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active")}));
 $("roleCards").innerHTML=roles.map(r=>'<div class="card"><h3>'+r.name+'</h3><p><b>집중 관점</b> '+r.focus+'</p><p><b>사고 검토 렌즈</b> '+r.lens+'</p><div>'+r.kw.slice(0,8).map(k=>'<span class="tag">'+k+'</span>').join("")+'</div></div>').join("");
 function classifyRole(){let t=$("personaText").value.toLowerCase(),scores=roles.map(r=>({r,s:r.kw.filter(k=>t.includes(k.toLowerCase())).length})).filter(x=>x.s).sort((a,b)=>b.s-a.s);$("personaResult").innerHTML=scores.length?scores.map(x=>'<div><b>'+x.r.name+'</b> · 키워드 '+x.s+'개 <div class="bar"><span style="width:'+Math.min(100,x.s*14)+'%"></span></div><span class="small">일치 근거: '+x.r.kw.filter(k=>t.includes(k.toLowerCase())).join(", ")+'</span><p>'+x.r.lens+'</p></div>').join(""):'일치 키워드가 없어 미분류입니다. 역할을 억지로 지정하지 않습니다.'}
