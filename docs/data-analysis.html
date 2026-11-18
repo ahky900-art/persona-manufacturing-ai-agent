@@ -31,7 +31,7 @@
 <h2>3. Persona → 산재 유형 → 산업현장 Risk 연결</h2>
 <p class="sub">아래 연결은 직무 전문성 및 사고사례의 위험 태그를 산업설비 위험 카탈로그와 연결한 지식 탐색 결과입니다. Persona가 사고확률을 높인다는 인과관계로 해석하면 안 됩니다.</p>
 <div id="linkAnalysis" class="status">Hugging Face와 KOSHA 데이터를 각각 불러오면 연결 분석이 표시됩니다.</div>
-<div class="grid" id="riskLinks"></div>
+<div class="card"><h3>KOSHA 사고사례 → 산업설비·작업 위험 연결</h3><p class="small">사고 원문에서 확인된 설비·작업 키워드를 기반으로 관련 설비군과 핵심 통제조치를 연결합니다. 이 연결은 전문가 검토용 후보이며 설비 고장률이나 사고확률이 아닙니다.</p><div id="equipmentRiskLinks" class="grid"></div></div><h3>Persona 역할 → 사고 검토 관점</h3><div class="grid" id="riskLinks"></div>
 </section>
 <section class="panel">
 <h2>4. 분석 방법과 해석상 한계</h2>
@@ -112,5 +112,33 @@ $("loadKosha").onclick=async()=>{const b=$("loadKosha");b.disabled=true;accRows=
  if(!all.length)throw new Error("API에서 사고사례 0건을 반환했습니다.");renderAccidentRows(all,"KOSHA 실시간 API 조회 성공 · 전체 "+(totalCount||all.length).toLocaleString()+"건");
  }catch(e){$("koshaStatus").textContent="API 조회 실패: "+e.message+" · Render 서비스 상태와 KOSHA_SERVICE_KEY를 확인하세요."; $("koshaStatus").className="small bad"}finally{b.disabled=false}};
 $("koshaFile").onchange=async e=>{let file=e.target.files[0];if(!file)return;$("koshaStatus").textContent="CSV 대체자료 읽는 중…";try{let buf=await file.arrayBuffer();let txt=new TextDecoder("utf-8").decode(buf);if((txt.match(/\uFFFD/g)||[]).length>5)txt=new TextDecoder("euc-kr").decode(buf);let matrix=parseCSV(txt);let headers=matrix.shift().map(x=>x.trim());let rows=matrix.map(c=>Object.fromEntries(headers.map((k,i)=>[k,c[i]||""])));renderAccidentRows(rows,"CSV 대체 업로드 완료");}catch(err){$("koshaStatus").textContent="CSV 분석 오류: "+err.message;$("koshaStatus").className="small bad"}}
-function drawLinks(){if(!hfRows.length||!accRows.length){$("linkAnalysis").textContent="두 데이터셋을 모두 불러오면 연결 분석이 표시됩니다. 현재 HF "+hfRows.length+"행 / KOSHA "+accRows.length+"행." ;return}let rolesCount={};hfRows.forEach(r=>roleHits(r).forEach(h=>rolesCount[h.name]=(rolesCount[h.name]||0)+1));let accCount={};accRows.forEach(r=>classifyAcc(r).forEach(h=>accCount[h.name]=(accCount[h.name]||0)+1));let mapping={"설비·기계·정비":["끼임·말림·협착","충돌·낙하물"],"전기·계장·자동화":["감전·전기·에너지"],"안전·환경·보건":["추락·전도","질식·중독·유해물질","화재·폭발·화상"],"물류·운송·인양":["충돌·낙하물","끼임·말림·협착"],"공정·원료·재료":["화재·폭발·화상","질식·중독·유해물질"],"생산·운전":["끼임·말림·협착","화재·폭발·화상"],"관리·감독·인력운영":["추락·전도","끼임·말림·협착"],"품질·검사·분석":["화재·폭발·화상","질식·중독·유해물질"]};let cards=[];Object.entries(mapping).forEach(([r,fs])=>{if(!rolesCount[r])return;fs.forEach(f=>{if(!accCount[f])return;cards.push('<div class="card"><h3>'+r+' → '+f+'</h3><p>HF 표본에서 역할 태그 '+rolesCount[r]+'건 · KOSHA 업로드 데이터에서 사고 포커스 '+accCount[f]+'건</p><p class="small">관계 의미: 해당 전문 역할이 이 사고유형을 검토할 수 있다는 지식 연결. 통계적 상관·인과·예측 성능을 뜻하지 않습니다.</p></div>')})});$("riskLinks").innerHTML=cards.join("")||"연결 가능한 공통 태그가 없습니다. 키워드 사전과 원본 컬럼을 검토하세요.";$("linkAnalysis").textContent="두 데이터셋 연결 완료 · HF 표본 "+hfRows.length+"행 / KOSHA "+accRows.length+"행. 다음은 실제 설비 카탈로그에 사고 태그를 연결해 전문가 검토할 단계입니다."}
+const equipmentSafetyMap={
+"끼임·말림·협착":{equipment:"회전 롤·컨베이어·셔틀컨베이어·프레스·회전체",mechanism:"회전체 접근, 불시기동, 협착 틈새, 방호장치 미흡",controls:"정비 전 전원·잔류에너지 격리(LOTO), 영점 확인, 방호덮개·연동가드·비상정지장치",keywords:["롤","회전","컨베이어","프레스","셔틀","이물질 제거","말려","끼임"]},
+"충돌·낙하물":{equipment:"천장크레인·호이스트·지게차·리치스태커·트레일러·운반대차",mechanism:"매달린 하중 낙하, 차량 후진·선회, 보행자 동선 중첩, 적재물 전도",controls:"보행·차량 동선 물리적 분리, 작업반경 출입통제, 유도자·신호수, 슬링·정격하중 확인, 주차브레이크",keywords:["크레인","지게차","리치스태커","트레일러","하역","인양","톤백","중량물"]},
+"추락·전도":{equipment:"적재 랙·톤백 적재장·작업발판·채석 사면·운반 중량물",mechanism:"적재 무게중심 이동, 사면 불안정, 지지·고정 미흡, 단차·개구부",controls:"적재단 하부 확장·고정, 전도방지 지지대, 사면 소단·배수·낙석통제, 난간·덮개",keywords:["적재","톤백","사면","낙석","굴착기","프레스","전도","추락"]},
+"화재·폭발·화상":{equipment:"용접·절단 설비·도장·희석제 취급구역·고온설비",mechanism:"화기 불티와 인화성 액체 접촉, 가연물 잔류, 고온물질 비산",controls:"화기작업 허가·감시자, 가연물 제거, 위험물 작업장소 분리, 소화설비·대피경로",keywords:["용접","불티","희석제","신너","화재","화상","용융"]},
+"질식·중독·유해물질":{equipment:"덕트·호퍼·탱크·집진기·폐수조·밀폐공간",mechanism:"산소결핍, 유해가스 축적, 분진 비산, 격리·환기 미흡",controls:"작업 전·중 가스측정, 환기, 설비 격리, 감시인·구조계획, 적합한 호흡보호구",keywords:["질식","산소","유해가스","밀폐공간","분진","중독","호퍼"]},
+"감전·전기·에너지":{equipment:"배전반·모터·인버터·전기히터·전기구동 설비",mechanism:"충전부 접촉, 오조작, 정전·격리 확인 미흡, 잔류전하",controls:"전원 차단·잠금표찰, 무전압 확인, 접지·절연, 전기작업 자격·작업허가",keywords:["감전","전기","누전","전원","차단","모터"]},
+"근골격·수작업":{equipment:"중량물·프레스 금형·원료 포대·수작업 운반물",mechanism:"인력 운반 하중 과다, 불안정한 파지·자세, 반복·비대칭 작업",controls:"견인대차·리프트 등 기계화, 중량·동선 계획, 2인 작업 기준, 작업 높이 개선",keywords:["중량물","인력운반","수작업","반복작업","요통"]}
+};
+function drawLinks(){
+ let accCount={};accRows.forEach(r=>classifyAcc(r).forEach(h=>accCount[h.name]=(accCount[h.name]||0)+1));
+ let safetyCards=[];
+ Object.entries(equipmentSafetyMap).forEach(([tag,m])=>{
+  const count=accCount[tag]||0;if(!count)return;
+  const matches=accRows.filter(r=>classifyAcc(r).some(h=>h.name===tag)).slice(0,2);
+  const samples=matches.map(r=>'<li>'+esc(r["재해구분(제목)"]||"제목 미기재")+'</li>').join("");
+  safetyCards.push('<div class="card"><h3>'+esc(tag)+' · '+count+'건</h3><p><b>관련 설비·작업</b><br>'+esc(m.equipment)+'</p><p><b>위험 메커니즘</b><br>'+esc(m.mechanism)+'</p><p><b>핵심 통제조치</b><br>'+esc(m.controls)+'</p><p><b>실제 사례 예시</b></p><ul>'+samples+'</ul><p class="small">키워드 후보: '+esc(m.keywords.join(" · "))+'</p></div>');
+ });
+ $("equipmentRiskLinks").innerHTML=safetyCards.join("")||'<p class="muted">KOSHA 데이터를 불러오면 사고 유형별 설비 연결이 표시됩니다.</p>';
+ if(!hfRows.length||!accRows.length){
+  $("linkAnalysis").textContent="KOSHA "+accRows.length+"건 · Persona 표본 "+hfRows.length+"건. 설비·작업 위험 연결은 KOSHA 데이터만으로도 표시되며, Persona 연결은 두 데이터셋을 모두 불러오면 활성화됩니다.";
+  $("riskLinks").innerHTML='<p class="muted">Persona 역할 연결을 보려면 Hugging Face 표본 데이터도 불러오세요.</p>';return;
+ }
+ let rolesCount={};hfRows.forEach(r=>roleHits(r).forEach(h=>rolesCount[h.name]=(rolesCount[h.name]||0)+1));
+ let mapping={"설비·기계·정비":["끼임·말림·협착","충돌·낙하물"],"전기·계장·자동화":["감전·전기·에너지"],"안전·환경·보건":["추락·전도","질식·중독·유해물질","화재·폭발·화상"],"물류·운송·인양":["충돌·낙하물","끼임·말림·협착"],"공정·원료·재료":["화재·폭발·화상","질식·중독·유해물질"],"생산·운전":["끼임·말림·협착","화재·폭발·화상"],"관리·감독·인력운영":["추락·전도","끼임·말림·협착"],"품질·검사·분석":["화재·폭발·화상","질식·중독·유해물질"]};
+ let cards=[];Object.entries(mapping).forEach(([r,fs])=>{if(!rolesCount[r])return;fs.forEach(tag=>{if(!accCount[tag])return;cards.push('<div class="card"><h3>'+esc(r)+' → '+esc(tag)+'</h3><p>Persona 표본 역할 태그 '+rolesCount[r]+'건 · KOSHA 사고사례 '+accCount[tag]+'건</p><p class="small">관계 의미: 해당 전문 역할이 이 사고유형을 검토할 수 있다는 지식 연결. 통계적 상관·인과·예측 성능을 뜻하지 않습니다.</p></div>')})});
+ $("riskLinks").innerHTML=cards.join("")||"연결 가능한 공통 태그가 없습니다. 키워드 사전과 원본 컬럼을 검토하세요.";
+ $("linkAnalysis").textContent="데이터 연결 완료 · HF Persona 표본 "+hfRows.length+"행 / KOSHA 사고사례 "+accRows.length+"건. 설비·작업 위험은 실제 사고 원문 태그와 연결했으며, Persona는 검토 관점으로만 연결합니다.";
+}
 </script></body></html>
