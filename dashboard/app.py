@@ -6,6 +6,7 @@ import json
 import streamlit as st
 import pandas as pd
 from persona_engine.classifier import classify_ocean
+from persona_engine.hf_loader import load_hf_dataset, numeric_ocean_columns, map_ocean_record
 from risk_engine.scoring import calculate_risk
 from agents.reviewers import review_scenario
 from accident_knowledge.loader import load_demo, load_uploaded_csv
@@ -25,7 +26,7 @@ with st.sidebar:
     worker_zone = st.checkbox("작업자 위험구역 진입", value=True)
     access = st.checkbox("출입통제 확인", value=False)
     st.divider()
-    st.caption("현재 화면은 실제 PLC·센서에 연결되지 않은 데모입니다.")
+    st.caption("실제 PLC·센서·작업허가 시스템에는 연결되지 않은 데모입니다.")
 
 scenario = {"equipment":equipment, "process":process, "hazard":hazard, "maintenance_active":maintenance,
             "loto_confirmed":loto, "worker_in_zone":worker_zone, "access_control":access}
@@ -40,7 +41,7 @@ with risk_tab:
     c.metric("핵심 통제 실패", "예" if risk.hard_alert else "아니오")
     d.metric("현장 확인", "필요")
     if risk.hard_alert:
-        st.error("긴급 확인: 정비 중 LOTO가 확인되지 않았습니다. 실제 작업을 즉시 안전절차에 따라 확인하십시오.")
+        st.error("긴급 확인: 정비 중 LOTO가 확인되지 않았습니다. 실제 작업상태와 안전절차를 즉시 확인하십시오.")
     elif risk.score >= 35:
         st.warning("위험 수준이 높습니다. 담당 안전관리자의 현장 확인이 필요합니다.")
     st.subheader("현재 입력된 작업상태")
@@ -57,10 +58,46 @@ with persona_tab:
             st.write("분석 초점:", role["focus"])
             st.write("분류 점수(내부 규칙):", role["confidence"])
             st.json(p["ocean"])
-    st.info("분류는 에이전트의 검토 관점을 배정할 뿐이며, 개인의 성격·사고확률·업무 적합성을 판단하지 않습니다. MBTI는 입력 데이터에 직접 존재한다고 가정하지 않습니다.")
-    hf_id = st.text_input("선택적 Hugging Face 데이터셋 ID", value="")
-    if st.button("Hugging Face 연결 안내"):
-        st.info("데이터셋 ID를 확인하고 HF_DATASET_ID 및 필요 시 HF_TOKEN을 환경변수로 설정한 뒤 loader를 연결하세요. MVP는 외부 데이터 자동 다운로드를 수행하지 않습니다.")
+    st.info("분류는 에이전트의 검토 관점을 배정할 뿐이며, 개인의 성격·사고확률·업무 적합성을 판단하지 않습니다. MBTI는 원본에 직접 존재한다고 가정하지 않습니다.")
+    st.markdown("#### Hugging Face 데이터셋 불러오기")
+    hf_id = st.text_input("Dataset ID", value="nvidia/Nemotron-Personas-Korea")
+    hf_split = st.text_input("Split", value="train")
+    hf_limit = st.number_input("최대 로딩 행 수", min_value=100, max_value=50000, value=2000, step=100)
+    if st.button("데이터셋 불러오기"):
+        try:
+            frame = load_hf_dataset(hf_id, hf_split, limit=int(hf_limit))
+            st.session_state["hf_persona_frame"] = frame
+            st.success(f"{len(frame):,}개 행을 불러왔습니다. OCEAN 열을 아래에서 직접 지정하세요.")
+        except Exception as exc:
+            st.error(f"데이터셋 로딩 실패: {exc}")
+    frame = st.session_state.get("hf_persona_frame")
+    if frame is not None:
+        st.write("데이터 미리보기")
+        st.dataframe(frame.head(10), use_container_width=True)
+        candidates = numeric_ocean_columns(frame)
+        if len(candidates) >= 5:
+            st.markdown("#### OCEAN 열 매핑")
+            traits = ["openness","conscientiousness","extraversion","agreeableness","neuroticism"]
+            mapping = {}
+            for trait in traits:
+                aliases = [c for c in candidates if trait in c.lower() or trait[:3] in c.lower()]
+                default = aliases[0] if aliases else candidates[0]
+                mapping[trait] = st.selectbox(trait, candidates, index=candidates.index(default), key=f"ocean_{trait}")
+            if st.button("선택한 열로 기능 유형 분류"):
+                try:
+                    output = []
+                    for idx, row in frame.iterrows():
+                        profile = map_ocean_record(row, mapping)
+                        output.append({"row":int(idx), **classify_ocean(profile), **profile})
+                    result = pd.DataFrame(output)
+                    st.session_state["persona_results"] = result
+                except Exception as exc:
+                    st.error(f"분류 실패: {exc}")
+        else:
+            st.warning("0~1 범위의 숫자형 열이 5개 미만입니다. 원본 데이터의 구조와 OCEAN 필드의 중첩 여부·값 범위를 확인해야 합니다.")
+        if "persona_results" in st.session_state:
+            st.dataframe(st.session_state["persona_results"], use_container_width=True)
+            st.download_button("분류 결과 CSV 다운로드", st.session_state["persona_results"].to_csv(index=False).encode("utf-8-sig"), "persona_classification.csv", "text/csv")
 
 with agent_tab:
     st.subheader("다중 에이전트 독립 검토")
@@ -79,15 +116,15 @@ with ontology_tab:
     graph = build_graph(scenario)
     st.graphviz_chart(graph_to_dot(graph), use_container_width=True)
     st.write(f"노드 {graph.number_of_nodes()}개 · 관계 {graph.number_of_edges()}개")
-    st.caption("관계는 MVP의 개념 스키마이며 실제 사업장 데이터로 검증된 인과관계를 의미하지 않습니다.")
+    st.caption("관계는 MVP 개념 스키마이며, 검증된 인과관계를 의미하지 않습니다.")
 
 with accident_tab:
     st.subheader("산업재해 지식 데이터")
-    uploaded = st.file_uploader("KOSHA 등 출처가 확인된 CSV 업로드", type=["csv"])
+    uploaded = st.file_uploader("출처가 확인된 KOSHA 등 CSV 업로드", type=["csv"])
     try:
         accidents = load_uploaded_csv(uploaded) if uploaded else load_demo()
         st.dataframe(accidents, use_container_width=True)
-        st.caption("업로드 데이터는 현재 세션에서만 사용합니다. 원본 이용조건과 출처를 반드시 확인하십시오.")
+        st.caption("업로드 데이터는 현재 세션에서만 사용합니다. 원본 이용조건과 출처를 확인하십시오.")
     except Exception as exc:
         st.error(f"CSV를 읽지 못했습니다: {exc}")
         accidents = load_demo()
