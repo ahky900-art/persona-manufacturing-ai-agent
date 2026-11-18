@@ -2,155 +2,193 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import json
 import streamlit as st
 import pandas as pd
-from persona_engine.classifier import classify_ocean, classify_persona_record
 from persona_engine.hf_loader import load_hf_dataset, load_uploaded_persona_csv, OCEAN_FIELDS
-from risk_engine.scoring import calculate_risk
-from agents.reviewers import review_scenario
+from persona_engine.role_taxonomy import ROLE_DEFINITIONS, classify_work_persona
 from accident_knowledge.loader import load_demo, load_uploaded_csv
-from ontology.graph import build_graph, graph_to_dot
+from accident_knowledge.focus_classifier import classify_accident_focus, RULES
+from risk_engine.industrial_risk_catalog import EQUIPMENT, PATHS, WORK_SAFETY
+from risk_engine.scoring import calculate_risk
 
-st.set_page_config(page_title="Persona Manufacturing Safety Agent", page_icon="🦺", layout="wide")
+st.set_page_config(page_title="Persona Manufacturing AI Safety Agent", page_icon="🦺", layout="wide")
 st.title("🦺 Persona Manufacturing AI Safety Agent")
-st.caption("제조 현장 위험요인 교차검토 · 온톨로지 · 야간 안전관제 | 연구용 MVP")
+st.caption("합성 페르소나의 직무 관점 → 산업재해 포커스 → 제조설비 위험경로 → 관측 신호 | 연구용 MVP")
 
 with st.sidebar:
-    st.subheader("시나리오 입력")
-    equipment = st.selectbox("설비", ["회전 롤", "천장크레인", "지게차", "로터리킬른", "소각로", "기타"])
-    process = st.selectbox("작업", ["정비 작업", "이물 제거", "인양 작업", "운반 작업", "점검 작업"])
-    hazard = st.selectbox("위험유형", ["끼임", "협착", "충돌", "추락", "화상", "분진"])
-    maintenance = st.checkbox("정비 작업 진행 중", value=True)
-    loto = st.checkbox("LOTO 확인 완료", value=False)
-    worker_zone = st.checkbox("작업자 위험구역 진입", value=True)
-    access = st.checkbox("출입통제 확인", value=False)
+    st.subheader("분석 대상")
+    equipment_key = st.selectbox("산업설비", list(EQUIPMENT), format_func=lambda k:EQUIPMENT[k], index=0)
     st.divider()
-    st.caption("실제 PLC·센서·작업허가 시스템에는 연결되지 않은 데모입니다.")
+    st.caption("위험 경로는 ahky900-art/refractory의 설비별 온톨로지·정비 프로파일을 바탕으로 구성했습니다.")
+    st.caption("센서·PLC·작업허가 실시간 연동은 아직 없습니다.")
 
-scenario = {"equipment":equipment, "process":process, "hazard":hazard, "maintenance_active":maintenance,
-            "loto_confirmed":loto, "worker_in_zone":worker_zone, "access_control":access}
-risk_tab, persona_tab, agent_tab, ontology_tab, accident_tab, eval_tab = st.tabs(
-    ["통합 관제", "Persona Lab", "Agent Control", "Ontology Graph", "사고 지식", "평가·한계"])
+tabs=st.tabs(["전체 구조","Persona 분류 기준","사고 포커스","산업현장 Risk","작업자 안전 Risk","온톨로지 경로","검증·출처"])
 
-with risk_tab:
-    risk = calculate_risk(5, 4, 4, 0.25, loto_confirmed=loto, maintenance_active=maintenance)
-    a,b,c,d = st.columns(4)
-    a.metric("위험점수 (데모)", risk.score)
-    b.metric("위험등급", risk.level)
-    c.metric("핵심 통제 실패", "예" if risk.hard_alert else "아니오")
-    d.metric("현장 확인", "필요")
-    if risk.hard_alert:
-        st.error("긴급 확인: 정비 중 LOTO가 확인되지 않았습니다. 실제 작업상태와 안전절차를 즉시 확인하십시오.")
-    elif risk.score >= 35:
-        st.warning("위험 수준이 높습니다. 담당 안전관리자의 현장 확인이 필요합니다.")
-    st.subheader("현재 입력된 작업상태")
-    st.json(scenario)
-    st.caption("점수는 S=5, L=4, E=4, 통제효과=0.25인 데모 가정입니다. 실측값이 아닙니다.")
+with tabs[0]:
+    st.subheader("시스템 작동 구조")
+    st.graphviz_chart("""
+    digraph G {
+      rankdir=LR; node [shape=box,style="rounded,filled",fillcolor="#eaf1f8"];
+      A[label="Hugging Face\nPersona fields"]; B[label="Work-function roles\n근거 키워드·가중치"];
+      C[label="KOSHA cases\n사고 제목·개요·원인·대책"]; D[label="Accident focus\n다중 태깅"];
+      E[label="Refractory industry\n11 equipment profiles"]; F[label="Process condition\n운전·정비 인자"];
+      G[label="Damage mechanism\n열·화학·기계"]; H[label="Monitoring signals\n관측 후보"]; I[label="Alert & control\n관리자 검토"];
+      A->B; C->D; B->D[label="review lens"]; D->F; E->F; F->G->H->I;
+    }
+    """,use_container_width=True)
+    a,b,c=st.columns(3)
+    a.metric("산업설비 프로파일",len(EQUIPMENT))
+    b.metric("기능적 페르소나",len(ROLE_DEFINITIONS))
+    c.metric("사고 포커스 태그",len(RULES))
+    st.info("핵심 원칙: Persona는 무엇을 먼저 검토할지 제안합니다. 위험 등급은 실제 작업·설비 데이터로 별도 산출해야 하며 Persona 점수로 사고확률을 계산하지 않습니다.")
 
-with persona_tab:
-    st.subheader("Hugging Face 페르소나 데이터")
-    st.markdown("기본 데이터셋에는 OCEAN 점수 열이 없을 수 있습니다. Extended 데이터셋에서 다섯 특성이 확인될 때만 OCEAN 규칙을 적용하며, 그렇지 않으면 직업·전문성 서술로 검토 관점을 분류합니다.")
-    extended_upload = st.file_uploader("NVIDIA Nemotron-Personas-Korea-Extended CSV (선택)", type=["csv"], key="extended_persona_csv")
-    if extended_upload is not None:
+with tabs[1]:
+    st.subheader("Hugging Face 데이터 → 기능적 Persona 분류")
+    st.markdown("**분류 대상은 합성 인물의 직무 맥락입니다.** 성격 유형(MBTI)이나 근로자 개인의 안전행동을 진단하지 않습니다.")
+    st.markdown("기본 데이터셋 또는 NVIDIA Extended CSV를 불러온 뒤, 레코드별 분류 근거를 확인할 수 있습니다.")
+    upload=st.file_uploader("Nemotron-Personas-Korea-Extended CSV 업로드(선택)",type=["csv"],key="persona_csv")
+    if upload is not None:
         try:
-            frame = load_uploaded_persona_csv(extended_upload)
-            st.session_state["hf_personas"] = frame
-            st.session_state["persona_source"] = "Nemotron-Personas-Korea-Extended CSV"
-            st.success("Extended CSV를 불러왔습니다. 안전 필터링 후 OCEAN 필드를 확인합니다.")
+            st.session_state["personas"]=load_uploaded_persona_csv(upload)
+            st.session_state["persona_source"]="NVIDIA Extended CSV"
+            st.success("CSV 로딩 완료. 분석에 허용된 직무·전문성 필드만 남겼습니다.")
         except Exception as exc:
-            st.error(f"Extended CSV 로딩 실패: {exc}")
-    hf_id = st.text_input("기본 Hugging Face Dataset ID", value="nvidia/Nemotron-Personas-Korea")
-    hf_split = st.text_input("Split", value="train")
-    hf_limit = st.number_input("최대 로딩 행 수", min_value=50, max_value=10000, value=500, step=50)
-    if st.button("페르소나 데이터 불러오기"):
-        try:
-            frame = load_hf_dataset(hf_id, hf_split, limit=int(hf_limit))
-            st.session_state["hf_personas"] = frame
-            st.session_state["persona_source"] = "Hugging Face base dataset"
-            st.session_state.pop("persona_results", None)
-            st.success(f"{len(frame):,}개 샘플을 불러왔습니다. 이름·성별·연령·건강 등 개인/민감 속성은 화면 분석에서 제외했습니다.")
-        except Exception as exc:
-            st.error(f"데이터셋 로딩 실패: {exc}")
-    frame = st.session_state.get("hf_personas")
-    if frame is not None:
-        st.caption("데이터 출처: " + st.session_state.get("persona_source", "업로드/세션 데이터"))
-        st.write("안전 필터링 후 데이터 미리보기")
-        st.dataframe(frame.head(8), use_container_width=True)
-        available_ocean = [field for field in OCEAN_FIELDS if field in frame.columns]
-        if len(available_ocean) == 5:
-            st.success("OCEAN 5개 속성이 모두 확인되었습니다. 실제 값 파싱 후 분류합니다.")
-        else:
-            st.info(f"현재 데이터셋에서 OCEAN 필드 {len(available_ocean)}/5개 확인. OCEAN 점수 분류 대신 직업·전문성 텍스트 기반 기능 관점 분류를 적용합니다.")
-        if st.button("기능적 분석 관점 분류 실행"):
-            rows = []
-            for idx, row in frame.iterrows():
-                record = row.to_dict()
-                result = classify_persona_record(record)
-                rows.append({
-                    "row": int(idx),
-                    "role": result["role"],
-                    "focus": result["focus"],
-                    "confidence": result["confidence"],
-                    "method": result["method"],
-                    "occupation": record.get("occupation", ""),
-                    "professional_persona": record.get("professional_persona", "")
-                })
-            result_frame = pd.DataFrame(rows)
-            st.session_state["persona_results"] = result_frame
-        if "persona_results" in st.session_state:
-            result_frame = st.session_state["persona_results"]
-            st.dataframe(result_frame, use_container_width=True)
-            st.download_button("분류 결과 CSV 다운로드", result_frame.to_csv(index=False).encode("utf-8-sig"), "persona_review_lenses.csv", "text/csv")
-            st.caption("이 결과는 안전 검토 관점 배정용 실험적 분류이며, 실제 근로자 성격·사고확률·업무 적합성 평가가 아닙니다.")
+            st.error(f"CSV 로딩 실패: {exc}")
+    with st.expander("Hugging Face 기본 데이터셋에서 불러오기"):
+        dsid=st.text_input("Dataset ID",value="nvidia/Nemotron-Personas-Korea")
+        split=st.text_input("Split",value="train")
+        limit=st.number_input("최대 샘플",min_value=20,max_value=5000,value=300,step=20)
+        if st.button("기본 페르소나 불러오기"):
+            try:
+                st.session_state["personas"]=load_hf_dataset(dsid,split,limit=int(limit))
+                st.session_state["persona_source"]="Hugging Face base dataset"
+                st.success(f"{len(st.session_state['personas']):,}건을 스트리밍으로 불러왔습니다.")
+            except Exception as exc:
+                st.error(f"로딩 실패: {exc}")
+    st.markdown("#### 필드별 분류 가중치")
+    weights={"occupation":4,"professional_persona":4,"skills_and_expertise_list":3,"skills_and_expertise":2,"detailed_persona":2,"career_goals_and_ambitions":1,"persona":1}
+    st.dataframe(pd.DataFrame([{"필드":k,"가중치":v,"역할": "직업·전문성 근거" if v>=2 else "보조 근거"} for k,v in weights.items()]),use_container_width=True,hide_index=True)
+    st.caption("점수 = 필드 가중치 × 해당 필드에서 일치한 직무 키워드 수. 복수 역할을 허용하며 일치 키워드와 원본 필드를 공개합니다.")
+    st.markdown("#### 역할 정의")
+    for key,definition in ROLE_DEFINITIONS.items():
+        with st.expander(definition["label"]):
+            st.write("**집중 관점:**",definition["focus"])
+            st.write("**사고 검토 렌즈:**",definition["incident_lens"])
+            st.write("**대표 키워드:**",", ".join(definition["keywords"]))
+            st.write("**검토 질문:**")
+            for q in definition["questions"]: st.write("•",q)
+    frame=st.session_state.get("personas")
+    if frame is not None and not frame.empty:
+        st.caption("데이터 출처: "+st.session_state.get("persona_source",""))
+        st.write("허용된 직무·전문성 필드 미리보기")
+        st.dataframe(frame.head(10),use_container_width=True)
+        if st.button("전체 레코드 역할 분류"):
+            rows=[]
+            for ix,row in frame.iterrows():
+                result=classify_work_persona(row.to_dict())
+                for rank,item in enumerate(result["ranked"],start=1):
+                    rows.append({"row":int(ix),"순위":rank,"역할":item["label"],"점수":item["score"],"비중":item["share"],"집중 관점":item["focus"],"사고 검토 렌즈":item["incident_lens"],"근거":", ".join(x["field"]+":"+x["keyword"] for x in item["evidence"][:8])})
+                if not result["ranked"]:
+                    rows.append({"row":int(ix),"순위":None,"역할":"미분류","점수":0,"비중":0,"집중 관점":"근거 부족","사고 검토 렌즈":"일반 검토","근거":"직무 키워드 매칭 없음"})
+            st.session_state["role_results"]=pd.DataFrame(rows)
+        if "role_results" in st.session_state:
+            res=st.session_state["role_results"]
+            st.dataframe(res,use_container_width=True)
+            st.download_button("Persona 분류 CSV 다운로드",res.to_csv(index=False).encode("utf-8-sig"),"persona_role_results.csv","text/csv")
     else:
-        st.info("기본 데모 페르소나 4종은 외부 데이터 연결 없이도 Agent Control에서 사용할 수 있습니다.")
+        st.info("데이터를 불러오기 전에도 위 역할 정의와 가중치 기준을 확인할 수 있습니다.")
+    st.warning("OCEAN 5개 필드는 직무 분류에 사용하지 않습니다. Extended의 건강·성별·연령·소득·가족 등 인구통계 속성도 위험 점수와 역할 배정에서 제외합니다.")
 
-with agent_tab:
-    st.subheader("다중 에이전트 독립 검토")
-    for result in review_scenario(scenario):
-        with st.expander(result["agent"], expanded=True):
-            st.markdown("**발견사항**")
-            for item in result["findings"]:
-                st.write("•", item)
-            st.markdown("**검토 질문**")
-            for q in result["questions"]:
-                st.write("–", q)
-    st.caption("에이전트는 규칙 기반 데모입니다. LLM 판정 또는 자동 작업중지 명령을 수행하지 않습니다.")
-
-with ontology_tab:
-    st.subheader("설비–공정–위험–사고–통제 온톨로지")
+with tabs[2]:
+    st.subheader("KOSHA 사고사례 → 사고 포커스")
+    st.markdown("사고 제목·발생 개요·발생 원인·예방대책의 텍스트에서 위험 키워드를 다중 태깅합니다. 사례의 사고 유형을 분류하는 규칙이며 발생확률 모델은 아닙니다.")
+    upload_acc=st.file_uploader("KOSHA 제조업 사고사례 CSV 업로드",type=["csv"],key="kosha_csv")
     try:
-        accidents_for_graph = load_demo()
-        graph = build_graph(scenario, accidents_for_graph)
-        st.graphviz_chart(graph_to_dot(graph), use_container_width=True)
-        st.write(f"노드 {graph.number_of_nodes()}개 · 관계 {graph.number_of_edges()}개")
+        cases=load_uploaded_csv(upload_acc) if upload_acc else load_demo()
     except Exception as exc:
-        st.error(f"온톨로지 그래프 생성 실패: {exc}")
-    st.caption("사고사례와 예방대책은 연결 후보로 표시합니다. 그래프의 연결은 통계적·물리적 인과관계가 검증되었다는 뜻이 아닙니다.")
+        st.error(f"사고 데이터 로딩 오류: {exc}")
+        cases=load_demo()
+    tagged=[]
+    for ix,row in cases.iterrows():
+        result=classify_accident_focus(row.to_dict())
+        tagged.append({"row":int(ix),"title":row.get("title",""),"cause":row.get("cause",""),"prevention":row.get("prevention",""),"primary_focus":result["primary"],"all_focus":", ".join(x["label"] for x in result["hits"]),"matched_terms":", ".join(sorted(set(w for x in result["hits"] for w in x["matched_terms"])))})
+    tagged_df=pd.DataFrame(tagged)
+    c1,c2=st.columns(2)
+    c1.metric("사고사례",len(cases))
+    c2.metric("분류된 사례",int((tagged_df["primary_focus"]!="미분류").sum()))
+    focus_filter=st.selectbox("사고 포커스 필터",["전체"]+list(RULES))
+    view=tagged_df if focus_filter=="전체" else tagged_df[tagged_df["all_focus"].str.contains(focus_filter,regex=False)]
+    st.dataframe(view,use_container_width=True,hide_index=True)
+    st.download_button("사고 포커스 결과 CSV",tagged_df.to_csv(index=False).encode("utf-8-sig"),"kosha_accident_focus.csv","text/csv")
+    for label,words in RULES.items():
+        with st.expander(label):
+            st.write("**키워드:**",", ".join(words))
+            matched=tagged_df[tagged_df["all_focus"].str.contains(label,regex=False)]
+            st.write(f"태깅 사례 {len(matched)}건")
+    st.caption("KOSHA 원본의 네 필드명은 로더에서 title/description/cause/prevention으로 정규화합니다. 출처와 이용조건은 원본 데이터 기준으로 유지하십시오.")
 
-with accident_tab:
-    st.subheader("산업재해 지식 데이터")
-    uploaded = st.file_uploader("출처가 확인된 KOSHA CSV 업로드", type=["csv"])
-    try:
-        accidents = load_uploaded_csv(uploaded) if uploaded else load_demo()
-        st.write(f"총 {len(accidents):,}건")
-        st.dataframe(accidents, use_container_width=True)
-        st.caption("업로드 데이터는 현재 세션에서만 사용합니다. 원본 이용조건과 출처를 확인하십시오.")
-    except Exception as exc:
-        st.error(f"CSV를 읽지 못했습니다: {exc}")
-        accidents = load_demo()
-    keyword = st.text_input("사례 검색", value=hazard)
-    mask = accidents.astype(str).apply(lambda col: col.str.contains(keyword, case=False, na=False)).any(axis=1)
-    st.dataframe(accidents[mask], use_container_width=True)
+with tabs[3]:
+    st.subheader(EQUIPMENT[equipment_key]+" · 설비 열화/손상 위험")
+    st.markdown("아래 경로는 refractory 저장소의 설비별 온톨로지와 정비 위험 프로파일을 구조화한 것입니다.")
+    paths=PATHS.get(equipment_key,[])
+    st.metric("등록된 위험 경로",len(paths))
+    for i,item in enumerate(paths,1):
+        with st.expander(f"{i}. {item['driver']} → {item['damage']}",expanded=(i==1)):
+            st.write("**변화 방향:**",item["change"])
+            st.write("**공정 상태 변화:**",item["state"])
+            st.write("**손상 메커니즘:**",item["mechanism"])
+            st.write("**취약 부위:**",item["zone"])
+            st.write("**성립 조건·주의:**",item["condition"])
+            st.write("**근거 연결:**",item["evidence"])
+            st.write("**관측 신호 후보:**")
+            for sig in item["monitor"]: st.write("•",sig)
+    st.warning("관측 신호는 후보 지표입니다. 현장 센서가 해당 변수를 측정하는지, 손상과 시간적으로 선행하는지 검증 전에는 예측 변수로 간주하지 않습니다.")
 
-with eval_tab:
-    st.subheader("검증 계획")
+with tabs[4]:
+    st.subheader("작업자 안전 위험 — 설비 열화 위험과 별도 관리")
+    st.markdown("이 영역은 KOSHA 사고사례의 작업·위험 태그와 일반적인 핵심 통제 확인 항목을 연결한 체크리스트입니다. 작업자 위치·LOTO·가스측정 등 실제 입력이 없으면 감지된 것으로 표시하지 않습니다.")
+    for item in WORK_SAFETY:
+        with st.expander(item["task"]+" · "+item["hazard"]):
+            st.write("**위험 트리거:**")
+            for t in item["triggers"]: st.write("•",t)
+            st.write("**핵심 통제:**")
+            for c in item["controls"]: st.write("•",c)
+            st.error("별도 즉시 확인 조건: "+item["hard_alert"])
+    st.info("작업자 안전 위험은 내화물 잔여두께·쉘 온도 같은 설비건전성 지표와 별도 점수체계로 관리해야 합니다.")
+
+with tabs[5]:
+    st.subheader("설비별 온톨로지 경로")
+    st.caption("인자 변화 → 공정 상태 → 손상 메커니즘 → 손상 결과 → 취약 부위 → 관측 신호")
+    selected=st.selectbox("위험 경로 선택",range(len(PATHS[equipment_key])),format_func=lambda n:PATHS[equipment_key][n]["driver"]+" → "+PATHS[equipment_key][n]["damage"],key="path_select")
+    p=PATHS[equipment_key][selected]
+    st.graphviz_chart(f'''
+    digraph RiskPath {{
+      rankdir=LR; node [shape=box,style="rounded,filled",fontname="Arial"];
+      A [label="{p["driver"]}",fillcolor="#dceaf7",style="rounded,filled"];
+      B [label="{p["state"]}",fillcolor="#e9e4f7",style="rounded,filled"];
+      C [label="{p["mechanism"]}",fillcolor="#f9e7cc",style="rounded,filled"];
+      D [label="{p["damage"]}",fillcolor="#f5dada",style="rounded,filled"];
+      E [label="{p["zone"]}",fillcolor="#dcefe4",style="rounded,filled"];
+      A->B->C->D->E;
+    }}
+    ''',use_container_width=True)
+    st.write("**성립 조건:**",p["condition"])
+    st.write("**관측 신호 후보:**",", ".join(p["monitor"]))
+    st.write("**근거:**",p["evidence"])
+    st.caption("관계는 문헌/설비 지식 기반의 조건부 가설입니다. 인과 크기나 발생확률을 의미하지 않습니다.")
+
+with tabs[6]:
+    st.subheader("검증 계획·데이터 출처")
     st.markdown("""
-- **페르소나:** 데이터 필드 매핑 성공률, 분류 안정성, 전문가 검토 일치도
-- **위험 탐지:** Precision, Recall, F1, PR-AUC, 치명위험 누락률
-- **경보 운영:** 오경보율, 확인 소요시간, 야간 관리자 경보량
-- **현장 효용:** 위험 발견률과 조치 리드타임의 개선 여부
+- Persona 분류: 안전·생산·정비 전문가 라벨과 Macro-F1, Precision/Recall, 근거 키워드 적합성
+- 사고 포커스: KOSHA 사례 전문가 다중라벨과 Macro-F1, 위험 태그 누락률
+- 설비 위험: 정상운전·비사고 데이터 포함 PR-AUC, Recall, 오경보율, 치명위험 누락률
+- 운영 효용: 야간 알림 건수, 중복경보 억제율, 확인시간, 조치 리드타임
     """)
-    st.warning("사고사례만으로 정상상태 대비 사고확률을 학습할 수 없습니다. 정상 운전 데이터, 비사고 작업 이력, PLC·센서·작업허가·LOTO 정보가 추가로 필요합니다.")
-    st.markdown("**운영 전 필수:** 산업안전 전문가 검토, 사업장 위험성평가 기준과 임계치 보정, 데이터 품질·결측·센서 신뢰도 검증, 접근권한 및 감사로그 설계.")
+    st.markdown("**데이터 출처**")
+    st.write("• NVIDIA Nemotron-Personas-Korea: https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea")
+    st.write("• NVIDIA Nemotron-Personas-Korea-Extended: https://catalog.ngc.nvidia.com/orgs/nvidia/nemotron-personas/resources/nemotron-personas-dataset-ko_kr/-")
+    st.write("• KOSHA 제조업 사고사례: https://www.data.go.kr/data/15163146/fileData.do")
+    st.write("• 설비별 위험 경로 원본: https://github.com/ahky900-art/refractory/blob/main/ontology-enhanced.js")
+    st.write("• 설비별 정비 위험 프로파일: https://github.com/ahky900-art/refractory/blob/main/maintenance-planning.js")
+    st.warning("사고사례만으로 정상상태 대비 사고확률을 학습할 수 없습니다. PLC·센서·작업허가·LOTO·정상운전·비사고 이력, 현장 위험성평가 및 전문가 검증이 필요합니다.")
