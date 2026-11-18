@@ -119,6 +119,13 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
     </div>
   </div>
   <div id="integratedRiskDetail" class="grid" style="margin-top:14px"></div>
+  <div class="card" id="integratedSourcePreview" style="margin-top:14px">
+    <h3>원천 데이터 미리보기 · 실제 조회 레코드</h3>
+    <p class="small">아래 내용은 분류 결과만이 아니라 API에서 받아온 원문 레코드입니다. Persona는 표본, KOSHA는 API 조회 건수 기준으로 표시합니다.</p>
+    <div class="grid" id="integratedHFRecords"><p class="muted">Hugging Face 원천 레코드 조회 대기 중</p></div>
+    <div id="integratedKoshaRecords"><p class="muted">KOSHA 원천 사고사례 조회 대기 중</p></div>
+    <p class="small"><a href="data-analysis.html">기존 실제 데이터 분석 화면에서 전체 분류·검색·사고사례 상세 보기 →</a></p>
+  </div>
   <div class="card" style="margin-top:14px">
     <h4>설비별 임계값 설정 및 경보 시뮬레이션</h4>
     <p class="small">경고·위험 기준과 현재값은 현장 승인값을 직접 입력합니다. 값이 비어 있으면 경보 판정을 하지 않으며, 이 화면은 실제 센서와 연결된 실시간 감시가 아닙니다. 설정은 현재 브라우저에 저장됩니다.</p>
@@ -317,6 +324,16 @@ $("safetyCards").innerHTML=safety.map(s=>'<div class="card"><h3>'+s[0]+'</h3><p>
   $i("integratedRiskDetail").innerHTML=
    '<div class="card"><h4>실제 사고 근거 · '+matchedCases.length+'건</h4><ul>'+(safetyExamples||'<li>설비 키워드 매칭 사례 없음</li>')+'</ul><p class="small">설비 키워드와 사고 서술의 규칙 기반 연결입니다. 개별 설비에서 발생한 것으로 확정하지 않습니다.</p></div>'+
    '<div class="card"><h4>Persona 검토 역할 연결</h4>'+(roleMapping||'<p>표본 역할과 사고 태그의 연결 근거가 아직 없습니다.</p>')+'<p class="small">Persona는 전문가 관점 분류이며 사고 위험점수나 개인의 사고성향이 아닙니다.</p></div>';
+
+  const hfCards=liveHF.slice(0,6).map((r,i)=>{
+   const occupation=r.occupation||"직무 미기재";
+   const persona=r.professional_persona||r.detailed_persona||r.persona||"";
+   const skills=r.skills_and_expertise_list||r.skills_and_expertise||"";
+   return '<details class="card"><summary><b>'+escI(occupation)+'</b> <span class="small">· Persona 표본 '+(i+1)+'</span></summary><p><b>Professional persona</b><br>'+escI(typeof persona==="string"?persona.slice(0,1000):JSON.stringify(persona).slice(0,1000))+'</p><p><b>전문성·기술</b><br>'+escI(typeof skills==="string"?skills.slice(0,700):JSON.stringify(skills).slice(0,700))+'</p></details>';
+  }).join("");
+  $i("integratedHFRecords").innerHTML='<h4>Hugging Face 실제 Persona 레코드 · '+liveHF.length.toLocaleString()+'행 중 최대 6건 표시</h4>'+(hfCards||'<p class="muted">Persona 원천 데이터가 아직 조회되지 않았습니다.</p>');
+  const koshaCards=liveKosha.slice(0,8).map((r,i)=>'<details class="card"><summary><b>'+escI(r["재해구분(제목)"]||"제목 미기재")+'</b> <span class="small">· KOSHA 사례 '+(i+1)+'</span></summary><p><b>발생 개요</b><br>'+escI(r["재해발생 개요(내용)"]||"미기재")+'</p><p><b>발생 원인</b><br>'+escI(r["재해발생 원인"]||"미기재")+'</p><p><b>예방 대책</b><br>'+escI(r["재해예방 대책"]||"미기재")+'</p></details>').join("");
+  $i("integratedKoshaRecords").innerHTML='<h4>KOSHA 실제 사고사례 원문 · '+liveKosha.length.toLocaleString()+'건 중 최대 8건 표시</h4>'+(koshaCards||'<p class="muted">KOSHA 원천 데이터가 아직 조회되지 않았습니다.</p>');
   paintThresholds(name);
  }
  async function loadHFIntegrated(){
