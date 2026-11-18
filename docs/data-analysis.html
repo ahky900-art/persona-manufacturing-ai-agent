@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>실제 데이터 분석 | Persona Manufacturing AI</title>
+<style>
+:root{--bg:#f3f6fa;--ink:#172334;--muted:#627187;--line:#d9e1eb;--blue:#2457a6;--green:#13754b;--amber:#946200;--red:#b42318}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,sans-serif}header{background:#12233d;color:white;padding:24px max(20px,calc((100vw - 1180px)/2))}main{max-width:1180px;margin:24px auto;padding:0 18px 60px}h1{margin:4px 0;font-size:28px}h2{font-size:20px;margin:0 0 8px}h3{font-size:16px;margin:0 0 8px}.sub,.muted{color:var(--muted)}.panel,.card{background:white;border:1px solid var(--line);border-radius:12px;padding:17px;margin:12px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.kpi{font-size:27px;font-weight:800}.tag{display:inline-block;background:#eaf1fc;color:#2457a6;padding:3px 8px;border-radius:20px;font-size:12px;margin:3px}.btn,button{border:0;border-radius:8px;background:var(--blue);color:white;padding:10px 14px;font:inherit;font-weight:650;cursor:pointer}button:disabled{opacity:.5;cursor:wait}input[type=file]{display:block;margin:12px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;border-bottom:1px solid var(--line);padding:8px;vertical-align:top}th{background:#f5f7fa}.status{padding:10px 12px;border-radius:8px;background:#edf3fc;margin:12px 0}.good{background:#eaf6ef;color:#135b38}.warn{background:#fff4df;color:#775000}.bad{background:#fff0ef;color:#9d2019}.bar{height:9px;background:#e8edf4;border-radius:8px;overflow:hidden}.bar span{display:block;height:100%;background:#356ac0}.small{font-size:12px;color:var(--muted)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.scroll{overflow:auto;max-height:400px}a{color:#2457a6}@media(max-width:650px){header{padding:20px}main{padding:0 12px}}
+</style></head><body>
+<header><div class="small" style="color:#b9cbea">MANUFACTURING SAFETY INTELLIGENCE · DATA ANALYSIS</div><h1>실제 데이터 분석</h1><p>Hugging Face 페르소나 원천 데이터와 KOSHA 사고사례를 이용한 데이터 기반 분류·연결 분석</p></header>
+<main>
+<div class="row"><a href="./">← 메인 대시보드</a><span class="small">분석 결과는 브라우저에서 계산되며 서버에 업로드되지 않습니다.</span></div>
+<section class="panel">
+<h2>1. Hugging Face 실제 페르소나 데이터</h2>
+<p class="sub">NVIDIA Nemotron-Personas-Korea의 공개 Dataset Viewer API에서 최대 1,000개 레코드 샘플을 가져옵니다. 전체 100만 행을 내려받는 것이 아니라, 표본 분석입니다. 기본 데이터셋은 합성 데이터이며 OCEAN 점수 필드를 포함하지 않습니다.</p>
+<div class="row"><button id="loadHF">Hugging Face 데이터 불러오기</button><span id="hfStatus" class="small">아직 불러오지 않았습니다.</span></div>
+<div class="grid" id="hfKpis"><div class="card"><div class="small">가져온 레코드</div><div class="kpi">0</div></div><div class="card"><div class="small">분류된 직무 역할</div><div class="kpi">-</div></div><div class="card"><div class="small">분류 근거</div><div class="kpi">-</div></div></div>
+<div id="hfRoles" class="card"><p class="muted">데이터를 불러오면 직무·전문성 필드를 8개 기능 역할로 분류합니다.</p></div>
+<div id="hfSamples" class="scroll"></div>
+<p class="small">원천: <a href="https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea" target="_blank" rel="noopener">nvidia/Nemotron-Personas-Korea</a> · CC BY 4.0. 원본의 성별·연령·건강·가족·소득 등 민감하거나 직무 위험분류와 무관한 속성은 분석에서 제외합니다.</p>
+</section>
+<section class="panel">
+<h2>2. KOSHA 실제 산업재해 사례</h2>
+<p class="sub">공식 CSV를 업로드하면 실제 사고 제목·개요·원인·예방대책을 분석합니다. KOSHA 원문을 자동으로 재배포하지 않으며, 사용자가 받은 공식 파일을 브라우저에서 처리합니다.</p>
+<div class="status warn"><b>데이터 준비:</b> 공공데이터포털의 제조업 업무상 사고사례 CSV(공개 페이지 기준 1,136행) 또는 SIF 아카이브 파일을 내려받아 업로드하세요. SIF 자료는 2016~2023년 중대재해 6,032건(제조업 등 2,573건 포함)이며 원문 변경금지 조건이 있으므로 원문은 수정하지 않고 분석용 태그만 별도로 생성합니다.</div>
+<div class="row"><a href="https://www.data.go.kr/data/15163146/fileData.do" target="_blank" rel="noopener">제조업 사고사례 CSV 다운로드 페이지</a><a href="https://www.data.go.kr/data/15140383/fileData.do" target="_blank" rel="noopener">SIF 아카이브 다운로드 페이지</a></div>
+<input type="file" id="koshaFile" accept=".csv,text/csv">
+<div id="koshaStatus" class="small">CSV 파일을 선택하면 분석합니다. UTF-8 또는 EUC-KR 인코딩을 지원하도록 처리합니다.</div>
+<div class="grid" id="koshaKpis"></div><div id="accidentDist"></div><div id="accidentExamples" class="scroll"></div>
+</section>
+<section class="panel">
+<h2>3. Persona → 산재 유형 → 산업현장 Risk 연결</h2>
+<p class="sub">아래 연결은 직무 전문성 및 사고사례의 위험 태그를 산업설비 위험 카탈로그와 연결한 지식 탐색 결과입니다. Persona가 사고확률을 높인다는 인과관계로 해석하면 안 됩니다.</p>
+<div id="linkAnalysis" class="status">Hugging Face와 KOSHA 데이터를 각각 불러오면 연결 분석이 표시됩니다.</div>
+<div class="grid" id="riskLinks"></div>
+</section>
+<section class="panel">
+<h2>4. 분석 방법과 해석상 한계</h2>
+<ul><li>Persona 분류는 occupation, professional_persona, skills_and_expertise(_list), career_goals_and_ambitions 등 직무 관련 텍스트의 키워드 근거를 이용한 다중분류입니다.</li><li>사고 유형 분류는 사고 제목·개요·원인·예방대책에서 위험 키워드를 찾는 규칙 기반 태깅입니다. 다중 태그이므로 유형별 합계가 사고 건수보다 클 수 있습니다.</li><li>표본 데이터의 직무 비중은 전체 한국 노동인구의 직업분포나 제조업 종사자 분포로 해석할 수 없습니다. 데이터셋의 합성 생성 분포 및 표본 편향이 존재합니다.</li><li>KOSHA 사고사례는 사고가 발생한 사례만 포함하는 선택편향이 있습니다. 사고확률·위험 발생률을 계산하려면 정상 작업·비사고 데이터와 노출시간 분모가 추가로 필요합니다.</li><li>산업설비 연결은 현재 Refractory의 설비별 손상 메커니즘 카탈로그와 안전 위험 카탈로그를 활용한 전문가 검토용 후보입니다. 센서 기반 실시간 감지나 검증된 인과모델은 아닙니다.</li></ul>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const roles=[
+{name:"공정·원료·재료",kw:["공정","원료","재료","화학","야금","금속","제련","광물","슬래그","반응","열역학","재료공학","화공","분석화학"]},
+{name:"설비·기계·정비",kw:["설비","기계","정비","보전","펌프","베어링","회전","진동","윤활","용접","배관","기계공학","정비보수"]},
+{name:"전기·계장·자동화",kw:["전기","계장","자동화","plc","센서","제어","계측","전력","전장","인버터","모터","전자공학"]},
+{name:"생산·운전",kw:["생산","운전","조업","오퍼레이터","운영","공정관리","제조","라인","가동","생산관리","품질관리"]},
+{name:"안전·환경·보건",kw:["안전","환경","보건","산업위생","위험성평가","산업안전","소방","방재","폐기물","대기오염"]},
+{name:"물류·운송·인양",kw:["물류","운송","지게차","크레인","인양","하역","창고","배송","운전기사","중량물"]},
+{name:"품질·검사·분석",kw:["품질","검사","시험","분석","계측","비파괴","nondestructive","n 데","인증","실험실","연구원"]},
+{name:"관리·감독·인력운영",kw:["관리자","감독","팀장","공장장","인사","노무","현장소장","관리","교육","인력","안전관리자"]}
+];
+const focus=[
+{name:"끼임·말림·협착",kw:["끼임","말림","협착","회전부","말려","압착","이물 제거","이물질 제거"]},
+{name:"추락·전도",kw:["추락","떨어짐","전도","넘어짐","개구부","사다리","비계","고소작업"]},
+{name:"충돌·낙하물",kw:["충돌","부딪힘","낙하","떨어진 물체","크레인","지게차","인양","맞음"]},
+{name:"화재·폭발·화상",kw:["화재","폭발","화상","용융","고온","화염","불티","가스폭발"]},
+{name:"질식·중독·유해물질",kw:["질식","중독","산소결핍","유해가스","밀폐공간","황화수소","일산화탄소","분진"]},
+{name:"감전·전기·에너지",kw:["감전","전기","누전","정전","전원","에너지 차단","잠금표찰","loto"]},
+{name:"근골격·수작업",kw:["근골격","요통","중량물","반복작업","수작업","근육","허리"]}
+];
+const norm=s=>(s??"").toString().toLowerCase().replace(/\s+/g," ");
+function roleHits(row){let fields=["occupation","professional_persona","skills_and_expertise","skills_and_expertise_list","career_goals_and_ambitions","persona"];let text=fields.map(k=>row[k]||"").join(" ");return roles.map(r=>({name:r.name,matched:r.kw.filter(k=>norm(text).includes(norm(k)))})).filter(x=>x.matched.length).sort((a,b)=>b.matched.length-a.matched.length)}
+let hfRows=[],accRows=[];
+function drawRoles(){let counts={};hfRows.forEach(r=>roleHits(r).forEach(h=>counts[h.name]=(counts[h.name]||0)+1));let total=hfRows.length; $("hfKpis").innerHTML='<div class="card"><div class="small">가져온 레코드</div><div class="kpi">'+total.toLocaleString()+'</div></div><div class="card"><div class="small">역할 태그 발생 수</div><div class="kpi">'+Object.values(counts).reduce((a,b)=>a+b,0).toLocaleString()+'</div></div><div class="card"><div class="small">분류 미일치</div><div class="kpi">'+hfRows.filter(r=>!roleHits(r).length).length.toLocaleString()+'</div></div>';let sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);$("hfRoles").innerHTML='<h3>표본 내 직무 역할 태그 빈도 (중복 허용)</h3>'+sorted.map(([n,v])=>'<p><b>'+n+'</b> · '+v+'건 ('+(v/Math.max(1,total)*100).toFixed(1)+'%)</p><div class="bar"><span style="width:'+(v/Math.max(1,total)*100)+'%"></span></div>').join("")+'<p class="small">한 레코드가 여러 역할에 중복 분류될 수 있습니다. 비율은 표본 레코드 대비 태그가 붙은 레코드 비중입니다.</p>';let samples=hfRows.slice(0,8).map(r=>{let hs=roleHits(r);return '<tr><td>'+esc(r.occupation||"미기재")+'</td><td>'+esc((r.professional_persona||"").slice(0,180))+'</td><td>'+esc(hs.map(x=>x.name).join(", ")||"미분류")+'</td><td>'+esc(hs.flatMap(x=>x.matched).slice(0,5).join(", "))+'</td></tr>'}).join("");$("hfSamples").innerHTML='<h3>실제 가져온 레코드 예시 (최대 8건)</h3><table><thead><tr><th>Occupation</th><th>Professional persona</th><th>분류 역할</th><th>키워드 근거</th></tr></thead><tbody>'+samples+'</tbody></table>';drawLinks()}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+$("loadHF").onclick=async()=>{let b=$("loadHF");b.disabled=true;$("hfStatus").textContent="Hugging Face Dataset Viewer API 요청 중…";try{let url="https://datasets-server.huggingface.co/rows?dataset=nvidia%2FNemotron-Personas-Korea&config=default&split=train&offset=0&length=1000";let res=await fetch(url);if(!res.ok)throw new Error("HTTP "+res.status);let data=await res.json();hfRows=(data.rows||[]).map(x=>x.row||x);if(!hfRows.length)throw new Error("레코드가 반환되지 않았습니다.");$("hfStatus").textContent="연결 성공 · "+hfRows.length+"개 표본 레코드 로딩";drawRoles()}catch(e){$("hfStatus").textContent="자동 연결 실패: "+e.message+" · 브라우저 CORS 또는 Dataset Viewer 상태일 수 있습니다. 아래 원본 링크에서 파일을 내려받거나 CSV 변환본을 제공해야 합니다.";$("hfStatus").className="small bad"}finally{b.disabled=false}};
+function parseCSV(text){let out=[],row=[],v="",q=false;for(let i=0;i<text.length;i++){let c=text[i],n=text[i+1];if(c=='"'&&q&&n=='"'){v+='"';i++}else if(c=='"'){q=!q}else if(c==','&&!q){row.push(v);v=""}else if((c=='\n'||c=='\r')&&!q){if(c=='\r'&&n=='\n')i++;row.push(v);if(row.some(x=>x.trim()))out.push(row);row=[];v=""}else v+=c}row.push(v);if(row.some(x=>x.trim()))out.push(row);return out}
+function classifyAcc(row){let text=norm(Object.values(row).join(" "));return focus.map(f=>({name:f.name,matched:f.kw.filter(k=>text.includes(norm(k)))})).filter(x=>x.matched.length)}
+$("koshaFile").onchange=async e=>{let file=e.target.files[0];if(!file)return;$("koshaStatus").textContent="파일 읽는 중…";try{let buf=await file.arrayBuffer();let dec=new TextDecoder("utf-8");let txt=dec.decode(buf);if((txt.match(/\uFFFD/g)||[]).length>5)txt=new TextDecoder("euc-kr").decode(buf);let matrix=parseCSV(txt);let headers=matrix.shift().map(x=>x.trim());accRows=matrix.map(c=>Object.fromEntries(headers.map((h,i)=>[h,c[i]||""])));let aliases={title:["BBSCTT_SJ_NM","재해구분(제목)","사고명","재해명"],desc:["BBSCTT_CN","재해발생 개요(내용)","재해개요","사고내용"],cause:["DSSTR_INDUCT_FCTR_CN","재해발생 원인","발생원인"],control:["RSKNSS_DCRS_CNTRPLN_CN","재해예방 대책","위험성감소대책"]};function get(r,ks){let k=Object.keys(r).find(x=>ks.some(a=>x.toLowerCase().replace(/\s/g,"").includes(a.toLowerCase().replace(/\s/g,""))));return k?r[k]:""}let counts={};accRows.forEach(r=>{let txt=[get(r,aliases.title),get(r,aliases.desc),get(r,aliases.cause),get(r,aliases.control)].join(" ");focus.forEach(f=>{if(f.kw.some(k=>norm(txt).includes(norm(k))))counts[f.name]=(counts[f.name]||0)+1})});$("koshaStatus").textContent="분석 완료 · "+accRows.length.toLocaleString()+"행 · "+headers.length+"개 컬럼";$("koshaStatus").className="small good";$("koshaKpis").innerHTML='<div class="card"><div class="small">사고사례 행 수</div><div class="kpi">'+accRows.length.toLocaleString()+'</div></div><div class="card"><div class="small">인식한 컬럼 수</div><div class="kpi">'+headers.length+'</div></div><div class="card"><div class="small">태그 발생 건수</div><div class="kpi">'+Object.values(counts).reduce((a,b)=>a+b,0).toLocaleString()+'</div></div>';let sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);$("accidentDist").innerHTML='<h3>사고 유형 태그 빈도 (중복 허용)</h3>'+sorted.map(([n,v])=>'<p><b>'+n+'</b> · '+v+'건 ('+(v/Math.max(1,accRows.length)*100).toFixed(1)+'%)</p><div class="bar"><span style="width:'+(v/Math.max(1,accRows.length)*100)+'%"></span></div>').join("");$("accidentExamples").innerHTML='<h3>업로드한 원문 미리보기 (최대 10행)</h3><table><thead><tr>'+headers.slice(0,5).map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+accRows.slice(0,10).map(r=>'<tr>'+headers.slice(0,5).map(h=>'<td>'+esc((r[h]||"").slice(0,160))+'</td>').join("")+'</tr>').join("")+'</tbody></table>';drawLinks()}catch(err){$("koshaStatus").textContent="CSV 분석 오류: "+err.message;$("koshaStatus").className="small bad"}};
+function drawLinks(){if(!hfRows.length||!accRows.length){$("linkAnalysis").textContent="두 데이터셋을 모두 불러오면 연결 분석이 표시됩니다. 현재 HF "+hfRows.length+"행 / KOSHA "+accRows.length+"행." ;return}let rolesCount={};hfRows.forEach(r=>roleHits(r).forEach(h=>rolesCount[h.name]=(rolesCount[h.name]||0)+1));let accCount={};accRows.forEach(r=>classifyAcc(r).forEach(h=>accCount[h.name]=(accCount[h.name]||0)+1));let mapping={"설비·기계·정비":["끼임·말림·협착","충돌·낙하물"],"전기·계장·자동화":["감전·전기·에너지"],"안전·환경·보건":["추락·전도","질식·중독·유해물질","화재·폭발·화상"],"물류·운송·인양":["충돌·낙하물","끼임·말림·협착"],"공정·원료·재료":["화재·폭발·화상","질식·중독·유해물질"],"생산·운전":["끼임·말림·협착","화재·폭발·화상"],"관리·감독·인력운영":["추락·전도","끼임·말림·협착"],"품질·검사·분석":["화재·폭발·화상","질식·중독·유해물질"]};let cards=[];Object.entries(mapping).forEach(([r,fs])=>{if(!rolesCount[r])return;fs.forEach(f=>{if(!accCount[f])return;cards.push('<div class="card"><h3>'+r+' → '+f+'</h3><p>HF 표본에서 역할 태그 '+rolesCount[r]+'건 · KOSHA 업로드 데이터에서 사고 포커스 '+accCount[f]+'건</p><p class="small">관계 의미: 해당 전문 역할이 이 사고유형을 검토할 수 있다는 지식 연결. 통계적 상관·인과·예측 성능을 뜻하지 않습니다.</p></div>')})});$("riskLinks").innerHTML=cards.join("")||"연결 가능한 공통 태그가 없습니다. 키워드 사전과 원본 컬럼을 검토하세요.";$("linkAnalysis").textContent="두 데이터셋 연결 완료 · HF 표본 "+hfRows.length+"행 / KOSHA "+accRows.length+"행. 다음은 실제 설비 카탈로그에 사고 태그를 연결해 전문가 검토할 단계입니다."}
+</script></body></html>
