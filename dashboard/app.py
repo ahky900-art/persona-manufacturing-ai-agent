@@ -103,11 +103,11 @@ with tabs[2]:
     st.subheader("KOSHA 사고사례 → 사고 포커스")
     st.markdown("사고 제목·발생 개요·발생 원인·예방대책의 텍스트에서 위험 키워드를 다중 태깅합니다. 사례의 사고 유형을 분류하는 규칙이며 발생확률 모델은 아닙니다.")
     st.markdown("#### 공공데이터포털 API 연결")
-    st.caption("API 인증키는 코드에 저장하지 않습니다. Render/Streamlit Secrets에 KOSHA_API_URL, KOSHA_SERVICE_KEY, 선택적으로 KOSHA_API_PARAMS_JSON을 등록하세요.")
+    st.caption("API 인증키는 코드에 저장하지 않습니다. Render/Streamlit Secrets에 KOSHA_SERVICE_KEY를 등록하세요. 요청주소는 기본값이 설정되어 있으며 필요할 때만 KOSHA_API_URL로 덮어씁니다.")
     try:
         from accident_knowledge.openapi_client import fetch_public_api, load_env_params
         import os
-        api_ready=bool(os.getenv("KOSHA_API_URL") and os.getenv("KOSHA_SERVICE_KEY"))
+        api_ready=bool(os.getenv("KOSHA_SERVICE_KEY"))
         if api_ready:
             if st.button("실제 산재 API 조회",key="fetch_kosha_api"):
                 try:
