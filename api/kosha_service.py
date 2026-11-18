@@ -16,7 +16,7 @@ def accidents(page: int = Query(1, ge=1), per_page: int = Query(100, ge=1, le=50
     try:
         import pandas as pd
         frame, meta = fetch_public_api(params={"page": page, "perPage": per_page}, max_pages=1)
-        frame = frame.fillna("")
+        frame = frame.fillna("").astype(str)
         records = frame.to_dict(orient="records")
         return {"records": records, "count": len(records), "page": page, "per_page": per_page,
                 "source": "KOSHA ODCloud API", "metadata": {k:v for k,v in meta.items() if k != "endpoint"}}
