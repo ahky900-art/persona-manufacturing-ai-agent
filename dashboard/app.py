@@ -127,10 +127,20 @@ with tabs[2]:
         st.info(f"API 연결 모듈 초기화: {api_setup_exc}")
     upload_acc=st.file_uploader("KOSHA 제조업 사고사례 CSV 업로드(대체 경로)",type=["csv"],key="kosha_csv")
     try:
-        cases=load_uploaded_csv(upload_acc) if upload_acc else load_demo()
+        if upload_acc is not None:
+            cases=load_uploaded_csv(upload_acc)
+            case_source="업로드 CSV"
+        elif "kosha_api_frame" in st.session_state:
+            cases=normalize_columns(st.session_state["kosha_api_frame"])
+            case_source="KOSHA 실제 API"
+        else:
+            cases=load_demo()
+            case_source="내장 예시 데이터"
     except Exception as exc:
         st.error(f"사고 데이터 로딩 오류: {exc}")
         cases=load_demo()
+        case_source="내장 예시 데이터(대체)"
+    st.caption(f"현재 분석 데이터 출처: {case_source}")
     tagged=[]
     for ix,row in cases.iterrows():
         result=classify_accident_focus(row.to_dict())
