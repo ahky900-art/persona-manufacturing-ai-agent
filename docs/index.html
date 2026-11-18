@@ -14,6 +14,31 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 /* Ontology graph */
 .ontology-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#f3f6fb);padding:12px}
 .ontology-svg{display:block;width:100%;min-width:900px;height:auto}.ontology-svg .node{cursor:pointer;stroke-width:2}.ontology-svg .node:hover,.ontology-svg .node.selected{stroke:#172b4d;stroke-width:4}.ontology-svg text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;pointer-events:none}.ontology-svg .edge{fill:none;stroke:#8090a5;stroke-width:2.2;marker-end:url(#arrow)}.ontology-svg .edge.dashed{stroke-dasharray:7 6;stroke:#b17a20}.ontology-svg .edge-label{font-size:12px;fill:#536174}.ontology-svg .node-title{font-size:15px;font-weight:750;fill:#172b4d}.ontology-svg .node-sub{font-size:11px;fill:#46556a}.ontology-detail{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:15px;background:#fff}.ontology-legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;color:var(--muted);font-size:12px}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.ontology-edge-table td:first-child{font-weight:700;white-space:nowrap}
+
+/* Integrated live-data ontology */
+.integrated-ontology{margin-top:22px;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fbfcff}
+.integrated-graph-wrap{overflow-x:auto;margin-top:12px;padding-bottom:5px}
+.integrated-graph{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:18px;min-width:1040px;position:relative}
+.graph-lane{position:relative;background:#f1f5fa;border:1px solid #d9e2ee;border-radius:10px;padding:10px;min-height:160px}
+.graph-lane:not(:last-child):after{content:"➜";position:absolute;right:-17px;top:70px;color:#74869d;font-size:20px;z-index:2}
+.graph-lane h4{margin:0 0 9px;font-size:13px;color:#34445b}
+.graph-node-card{background:white;border:1px solid #d9e1eb;border-radius:8px;padding:10px;margin:7px 0;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.graph-node-card strong{display:block;font-size:13px;margin-bottom:4px}
+.graph-node-card .small{display:block;margin-top:5px}
+.graph-node-card.persona{border-left:4px solid #65a887}
+.graph-node-card.accident{border-left:4px solid #d5a34d}
+.graph-node-card.equipment{border-left:4px solid #bd6d6d}
+.graph-node-card.signal{border-left:4px solid #6489bd}
+.graph-node-card.alarm{border-left:4px solid #8064b2}
+.threshold-grid{display:grid;grid-template-columns:1.2fr .7fr .7fr .7fr .7fr .8fr;gap:7px;align-items:center;min-width:850px}
+.threshold-grid>div{padding:7px 4px;border-bottom:1px solid var(--line);font-size:12px}
+.threshold-grid input{width:100%;min-width:70px;padding:7px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.threshold-grid select{width:100%;padding:7px;border:1px solid var(--line);border-radius:6px}
+.threshold-scroll{overflow-x:auto}
+.alarm-state{font-weight:700}
+.alarm-state.normal{color:#087443}.alarm-state.warning{color:#9a6700}.alarm-state.critical{color:#b42318}.alarm-state.unset{color:#637083}
+@media(max-width:700px){.integrated-ontology{padding:10px}.threshold-grid{min-width:850px}}
+
 </style></head><body>
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
@@ -74,7 +99,34 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <g class="graph-node" data-node="monitor"><rect class="node" x="810" y="410" width="275" height="85" rx="10" fill="#f1f5fb" stroke="#9aabc2"/><text class="node-title" x="947" y="440" text-anchor="middle">감지 신호 · 통제조치</text><text class="node-sub" x="947" y="463" text-anchor="middle">센서·작업허가·LOTO·검사</text><text class="node-sub" x="947" y="480" text-anchor="middle">임계치 · 경보 · 관리자 확인</text></g>
 <text x="35" y="545" font-size="12" fill="#637083">노드를 클릭하면 상세 설명과 관계의 근거·검증 수준이 아래에 표시됩니다.</text>
 </svg></div>
-<div class="ontology-detail" id="ontologyDetail"><h3>① Hugging Face 원천 데이터</h3><p>Nemotron-Personas-Korea의 직무·전문성 관련 필드를 분류 입력으로 사용합니다. 실제 스키마 버전과 누락 필드를 확인한 뒤 사용해야 합니다.</p></div>
+
+<div class="integrated-ontology" id="integratedOntology">
+  <h3>실데이터 통합 온톨로지 · 설비 Risk → 임계값 → 알람</h3>
+  <p class="small">Hugging Face Persona 표본과 KOSHA 사고사례를 실제 조회해 선택 설비의 손상 메커니즘·인명안전 위험·관측 신호·설정된 알람 기준을 연결합니다.</p>
+  <div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="btn primary" id="loadIntegratedData">Persona + KOSHA 실데이터 연결</button>
+    <label for="integratedEquipment">설비 선택</label><select id="integratedEquipment"></select>
+    <span id="integratedStatus" class="small">데이터 연결 전 · 버튼을 눌러 두 원천을 조회하세요.</span>
+  </div>
+  <div class="grid" id="integratedKpis" style="margin-top:12px"></div>
+  <div class="integrated-graph-wrap">
+    <div class="integrated-graph" id="integratedGraph">
+      <div class="graph-lane"><h4>① Persona</h4><div class="graph-node-card">실제 HF 표본 조회 후 직무·전문성 역할이 표시됩니다.</div></div>
+      <div class="graph-lane"><h4>② KOSHA 사고</h4><div class="graph-node-card">사고 원문을 설비·작업 위험유형으로 연결합니다.</div></div>
+      <div class="graph-lane"><h4>③ 산업설비</h4><div class="graph-node-card">설비 선택 후 손상·안전 Risk를 표시합니다.</div></div>
+      <div class="graph-lane"><h4>④ 관측 변수</h4><div class="graph-node-card">온도·차압·두께 등 계측 후보를 표시합니다.</div></div>
+      <div class="graph-lane"><h4>⑤ 임계값·알람</h4><div class="graph-node-card">현장 승인값을 입력하면 경보를 판정합니다.</div></div>
+    </div>
+  </div>
+  <div id="integratedRiskDetail" class="grid" style="margin-top:14px"></div>
+  <div class="card" style="margin-top:14px">
+    <h4>설비별 임계값 설정 및 경보 시뮬레이션</h4>
+    <p class="small">경고·위험 기준과 현재값은 현장 승인값을 직접 입력합니다. 값이 비어 있으면 경보 판정을 하지 않으며, 이 화면은 실제 센서와 연결된 실시간 감시가 아닙니다. 설정은 현재 브라우저에 저장됩니다.</p>
+    <div id="thresholdTable"></div>
+    <div id="alarmSummary" class="result">임계값과 현재값을 입력하면 상태가 표시됩니다.</div>
+  </div>
+  <div class="notice" style="margin-top:12px">중요: 이 그래프의 KOSHA 사고사례는 위험 시나리오의 근거이며 설비별 사고확률이 아닙니다. 내화물 손상 메커니즘은 Refractory 온톨로지의 공학적 가설입니다. 경보 기준은 설비 설계값·제조사 기준·현장 위험성평가 및 승인된 운전절차로 검증해야 합니다.</div>
+</div><div class="ontology-detail" id="ontologyDetail"><h3>① Hugging Face 원천 데이터</h3><p>Nemotron-Personas-Korea의 직무·전문성 관련 필드를 분류 입력으로 사용합니다. 실제 스키마 버전과 누락 필드를 확인한 뒤 사용해야 합니다.</p></div>
 <h3 style="margin-top:20px">엣지(관계) 정의</h3>
 <table class="ontology-edge-table"><thead><tr><th>출발 노드</th><th>관계(Edge)</th><th>도착 노드</th><th>관계 의미</th><th>근거 수준</th></tr></thead><tbody>
 <tr><td>Hugging Face</td><td>HAS_FIELD / DESCRIBES</td><td>Persona 유형</td><td>직무·전문성 필드를 읽어 역할 점수를 계산</td><td>데이터 필드 + 규칙</td></tr>
@@ -153,4 +205,167 @@ $("focusCards").innerHTML=Object.entries(focusRules).map(([n,w])=>'<div class="c
 const eq=$("equipmentSelect");Object.keys(equipment).forEach(k=>eq.add(new Option(k,k)));function renderEq(){let name=eq.value,rows=equipment[name]||[];$("equipmentDetail").innerHTML=rows.map((r,i)=>'<div class="card risk" style="margin-bottom:10px"><h3>'+ (i+1)+'. '+r[0]+'</h3><div class="chain"><span>'+r[1]+'</span><b>→</b><span>'+r[2]+'</span><b>→</b><span>'+r[3]+'</span></div><p><b>취약 부위:</b> '+r[4]+'</p><p><b>관측 후보:</b> '+r[5]+'</p></div>').join("")}
 eq.onchange=renderEq;renderEq();
 $("safetyCards").innerHTML=safety.map(s=>'<div class="card"><h3>'+s[0]+'</h3><p><b>위험:</b> '+s[1]+'</p><p><b>위험 트리거:</b> '+s[2]+'</p><p><b>핵심 통제:</b> '+s[3]+'</p><p style="color:#a12b24"><b>하드 알림 후보:</b> '+s[4]+'</p></div>').join("");
+
+/* Live Persona + KOSHA -> equipment risk -> threshold graph */
+(function(){
+ const $i=id=>document.getElementById(id);
+ const KOSHA_URL="https://persona-manufacturing-kosha-api.onrender.com";
+ let liveHF=[],liveKosha=[],integratedLoaded=false;
+ const eqRiskKeywords={
+ "래들":["래들","용강","슬래그","출강","교반","용선"],
+ "로터리 킬른":["킬른","회전로","소성","클링커","원료"],
+ "RFCC 재생기":["rfcc","재생기","촉매","사이클론","딥레그"],
+ "소각로":["소각로","폐기물","연소실","회분","소각"],
+ "용융로형 소각로":["용융로","용융실","용융조","용융물","출탕","슬래그"],
+ "화격자형 소각로":["화격자","스토커","그레이팅","재 배출","폐기물"],
+ "가열로":["가열로","버너","노상","스키드","강재","가열대"],
+ "고로":["고로","용선","출선","풍구","노상","슬래그"],
+ "2차 개질로":["개질로","촉매 지지","스팀","공정가스","버너 타일"],
+ "Claus Thermal Reactor":["claus","황회수","h2s","so2","checker brick","버너 타일"],
+ "CFB 보일러":["cfb","순환재","보일러","사이클론","베드","수냉벽"]
+ };
+ const equipSignals={
+ "래들":[["쉘 온도","°C","high"],["내화물 잔여 두께","mm","low"],["슬래그 FeO","wt%","high"]],
+ "로터리 킬른":[["쉘 핫스팟 온도","°C","high"],["내화물 잔여 두께","mm","low"],["킬른 진동","mm/s","high"],["차압","kPa","high"]],
+ "RFCC 재생기":[["쉘 온도","°C","high"],["재생기 차압","kPa","high"],["내화물 잔여 두께","mm","low"],["촉매 손실량","kg/h","high"]],
+ "소각로":[["연소실 온도","°C","high"],["쉘 온도","°C","high"],["내화물 잔여 두께","mm","low"],["연소실 차압","kPa","high"]],
+ "용융로형 소각로":[["용융 온도","°C","high"],["쉘 온도","°C","high"],["슬래그 FeO","wt%","high"],["내화물 잔여 두께","mm","low"]],
+ "화격자형 소각로":[["연소실 온도","°C","high"],["화격자 구동 진동","mm/s","high"],["연소실 차압","kPa","high"],["내화물 잔여 두께","mm","low"]],
+ "가열로":[["노내 온도","°C","high"],["쉘 온도","°C","high"],["내화물 잔여 두께","mm","low"],["버너 공기비","-","high"]],
+ "고로":[["노상 열전대 온도","°C","high"],["냉각수 열유속","kW/m²","high"],["내화물 잔여 두께","mm","low"],["냉각수 출구온도","°C","high"]],
+ "2차 개질로":[["튜브 외벽 온도","°C","high"],["쉘 온도","°C","high"],["촉매층 차압","kPa","high"],["내화물 잔여 두께","mm","low"]],
+ "Claus Thermal Reactor":[["반응기 출구 온도","°C","high"],["Checker 차압","kPa","high"],["내화물 잔여 두께","mm","low"],["버너 O₂","vol%","high"]],
+ "CFB 보일러":[["베드 온도","°C","high"],["사이클론 차압","kPa","high"],["내화물 잔여 두께","mm","low"],["순환재 유량","t/h","high"]]
+ };
+ const personaToRisk={
+ "공정·원료·재료 분석":["화재·폭발·화상","질식·중독·유해물질"],
+ "설비·기계·정비":["끼임·말림·협착","충돌·낙하물"],
+ "전기·계장·자동화":["감전·전기·에너지","끼임·말림·협착"],
+ "생산·운전":["끼임·말림·협착","화재·폭발·화상"],
+ "안전·환경·보건":["추락·전도","질식·중독·유해물질","화재·폭발·화상"],
+ "물류·운송·인양":["충돌·낙하물","끼임·말림·협착"],
+ "품질·검사·분석":["화재·폭발·화상","질식·중독·유해물질"],
+ "관리·감독·인력운영":["추락·전도","끼임·말림·협착"]
+ };
+ const escI=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const normI=v=>String(v??"").toLowerCase().replace(/\s+/g," ");
+ function roleHitsI(row){
+  const fields=["occupation","professional_persona","skills_and_expertise","skills_and_expertise_list","career_goals_and_ambitions","persona","detailed_persona"];
+  const t=normI(fields.map(k=>row[k]||"").join(" "));
+  return roles.map(r=>({name:r.name,matched:r.kw.filter(k=>t.includes(normI(k)))})).filter(x=>x.matched.length);
+ }
+ function accidentTagsI(row){
+  const t=normI(Object.values(row||{}).join(" "));
+  return Object.entries(focusRules).map(([name,kw])=>({name,matched:kw.filter(k=>t.includes(normI(k)))})).filter(x=>x.matched.length);
+ }
+ function equipmentRowsI(name){return equipment[name]||[]}
+ function getStoredThreshold(name,signal){
+  try{return JSON.parse(localStorage.getItem("pmia_thresholds_v1")||"{}")[name+"|"+signal]||{warn:"",crit:"",value:""};}catch(e){return {warn:"",crit:"",value:""}}
+ }
+ function saveThreshold(name,signal,field,value){
+  let all={};try{all=JSON.parse(localStorage.getItem("pmia_thresholds_v1")||"{}")}catch(e){}
+  const key=name+"|"+signal;all[key]=all[key]||{warn:"",crit:"",value:""};all[key][field]=value;
+  try{localStorage.setItem("pmia_thresholds_v1",JSON.stringify(all))}catch(e){}
+ }
+ function alarmFor(dir,v,w,c){
+  if(v===""||w===""||c==="")return "unset";
+  const n=Number(v),wn=Number(w),cn=Number(c);
+  if(!Number.isFinite(n)||!Number.isFinite(wn)||!Number.isFinite(cn))return "unset";
+  if(dir==="high"){if(cn<=wn)return "unset";return n>=cn?"critical":n>=wn?"warning":"normal";}
+  if(cn>=wn)return "unset";return n<=cn?"critical":n<=wn?"warning":"normal";
+ }
+ function paintThresholds(name){
+  const signals=equipSignals[name]||[];
+  const rows=signals.map((s,i)=>{
+   const st=getStoredThreshold(name,s[0]),state=alarmFor(s[2],st.value,st.warn,st.crit);
+   const stateText={unset:"미설정",normal:"정상",warning:"경고",critical:"위험"}[state];
+   return '<div>'+escI(s[0])+' <span class="small">('+escI(s[1])+', '+(s[2]==="high"?"상한 감시":"하한 감시")+')</span></div><div><input type="number" step="any" data-thr="'+i+'" data-field="warn" aria-label="경고 기준" placeholder="경고 기준" value="'+escI(st.warn)+'"></div><div><input type="number" step="any" data-thr="'+i+'" data-field="crit" aria-label="위험 기준" placeholder="위험 기준" value="'+escI(st.crit)+'"></div><div><input type="number" step="any" data-thr="'+i+'" data-field="value" aria-label="현재값" placeholder="현재값" value="'+escI(st.value)+'"></div><div class="alarm-state '+state+'">'+stateText+'</div><div class="small">'+(state==="unset"?"승인 기준 입력 필요":state==="critical"?"위험 기준 초과·미달":state==="warning"?"경고 기준 도달":"설정 기준 내")+'</div>';
+  }).join("");
+  $i("thresholdTable").innerHTML='<div class="threshold-scroll"><div class="threshold-grid"><div><b>계측 항목</b></div><div><b>경고 기준</b></div><div><b>위험 기준</b></div><div><b>현재값(수동)</b></div><div><b>상태</b></div><div><b>판정</b></div>'+rows+'</div></div>';
+  $i("thresholdTable").querySelectorAll("input[data-thr]").forEach(input=>input.addEventListener("change",()=>{
+   const signal=signals[Number(input.dataset.thr)];saveThreshold(name,signal[0],input.dataset.field,input.value);paintThresholds(name);
+  }));
+  const states=signals.map(x=>alarmFor(x[2],getStoredThreshold(name,x[0]).value,getStoredThreshold(name,x[0]).warn,getStoredThreshold(name,x[0]).crit));
+  const critical=states.filter(x=>x==="critical").length,warning=states.filter(x=>x==="warning").length,unset=states.filter(x=>x==="unset").length;
+  $i("alarmSummary").innerHTML='<b>현재 설비 경보 요약</b><p>위험 '+critical+'건 · 경고 '+warning+'건 · 기준 미설정 '+unset+'건 · 정상 '+states.filter(x=>x==="normal").length+'건</p><p class="small">현재값은 사용자가 수동 입력한 값입니다. 센서 데이터 자동 수집이나 운전정지 명령은 수행하지 않습니다.</p>';
+ }
+ function paintIntegrated(){
+  const name=$i("integratedEquipment").value||Object.keys(equipment)[0];
+  const rows=equipmentRowsI(name),kw=(eqRiskKeywords[name]||[]).map(normI);
+  const matchedCases=liveKosha.filter(r=>{const t=normI(Object.values(r).join(" "));return kw.some(k=>k&&t.includes(k));});
+  const tagCounts={};matchedCases.forEach(r=>accidentTagsI(r).forEach(x=>tagCounts[x.name]=(tagCounts[x.name]||0)+1));
+  const roleCounts={};liveHF.forEach(r=>roleHitsI(r).forEach(x=>roleCounts[x.name]=(roleCounts[x.name]||0)+1));
+  const matchedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
+  const personaCards=Object.entries(roleCounts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([r,c])=>'<div class="graph-node-card persona"><strong>'+escI(r)+'</strong>'+c+'개 표본 레코드 · 검토 역할</div>');
+  const accidentCards=matchedTags.slice(0,5).map(([r,c])=>'<div class="graph-node-card accident"><strong>'+escI(r)+'</strong>'+c+'개 위험 태그 · 설비 키워드와 함께 매칭된 사례 '+matchedCases.length+'건</div>');
+  const equipmentCards=rows.slice(0,4).map((r,i)=>'<div class="graph-node-card equipment"><strong>'+escI(r[0])+'</strong>'+escI(r[1])+' → '+escI(r[2])+' → '+escI(r[3])+'<span class="small">취약부위: '+escI(r[4])+'</span></div>');
+  const signalCards=(equipSignals[name]||[]).map(x=>'<div class="graph-node-card signal"><strong>'+escI(x[0])+'</strong>'+escI(x[1])+' · '+(x[2]==="high"?"상한":"하한")+' 감시</div>');
+  const alarmCards=(equipSignals[name]||[]).map(x=>{const st=getStoredThreshold(name,x[0]),a=alarmFor(x[2],st.value,st.warn,st.crit);return '<div class="graph-node-card alarm"><strong>'+escI(x[0])+'</strong>'+({unset:"임계값 미설정",normal:"정상",warning:"경고",critical:"위험"}[a])+'<span class="small">경고 '+escI(st.warn||"미설정")+' / 위험 '+escI(st.crit||"미설정")+' '+escI(x[1])+'</span></div>'});
+  $i("integratedGraph").innerHTML=
+   '<div class="graph-lane"><h4>① Persona · HF 표본</h4>'+(personaCards.join("")||'<div class="graph-node-card">Persona 데이터 미조회</div>')+'</div>'+
+   '<div class="graph-lane"><h4>② KOSHA · 실제 사고</h4>'+(accidentCards.join("")||'<div class="graph-node-card">설비 키워드와 일치하는 KOSHA 사례 없음 · 분류 사전 검토 필요</div>')+'<div class="small">일치 사례 '+matchedCases.length+' / 전체 '+liveKosha.length+'</div></div>'+
+   '<div class="graph-lane"><h4>③ '+escI(name)+' · 손상 Risk</h4>'+(equipmentCards.join("")||'<div class="graph-node-card">설비 위험경로 데이터 없음</div>')+'</div>'+
+   '<div class="graph-lane"><h4>④ 관측 변수</h4>'+signalCards.join("")+'</div>'+
+   '<div class="graph-lane"><h4>⑤ 임계값·알람</h4>'+alarmCards.join("")+'</div>';
+  $i("integratedKpis").innerHTML=
+   '<div class="card"><div class="small">HF Persona 표본</div><div class="kpi">'+liveHF.length.toLocaleString()+'</div></div>'+
+   '<div class="card"><div class="small">KOSHA 사고사례</div><div class="kpi">'+liveKosha.length.toLocaleString()+'</div></div>'+
+   '<div class="card"><div class="small">선택 설비 연관 사례</div><div class="kpi">'+matchedCases.length.toLocaleString()+'</div></div>'+
+   '<div class="card"><div class="small">설비 위험경로</div><div class="kpi">'+rows.length+'</div></div>';
+  const safetyExamples=matchedCases.slice(0,5).map(r=>'<li>'+escI(r["재해구분(제목)"]||"제목 미기재")+'</li>').join("");
+  const roleMapping=Object.entries(personaToRisk).filter(([r,tags])=>roleCounts[r]&&tags.some(t=>tagCounts[t])).map(([r,tags])=>'<p><b>'+escI(r)+'</b> → '+escI(tags.filter(t=>tagCounts[t]).join(" · "))+'</p>').join("");
+  $i("integratedRiskDetail").innerHTML=
+   '<div class="card"><h4>실제 사고 근거 · '+matchedCases.length+'건</h4><ul>'+(safetyExamples||'<li>설비 키워드 매칭 사례 없음</li>')+'</ul><p class="small">설비 키워드와 사고 서술의 규칙 기반 연결입니다. 개별 설비에서 발생한 것으로 확정하지 않습니다.</p></div>'+
+   '<div class="card"><h4>Persona 검토 역할 연결</h4>'+(roleMapping||'<p>표본 역할과 사고 태그의 연결 근거가 아직 없습니다.</p>')+'<p class="small">Persona는 전문가 관점 분류이며 사고 위험점수나 개인의 사고성향이 아닙니다.</p></div>';
+  paintThresholds(name);
+ }
+ async function loadHFIntegrated(){
+  const splitRes=await fetch("https://datasets-server.huggingface.co/splits?dataset=nvidia%2FNemotron-Personas-Korea",{headers:{"Accept":"application/json"}});
+  if(!splitRes.ok)throw new Error("HF SPLITS HTTP "+splitRes.status);
+  const splitData=await splitRes.json(),chosen=(splitData.splits||[]).find(x=>x.config==="default"&&x.split==="train");
+  if(!chosen)throw new Error("HF default/train split 미확인");
+  let offset=0;while(offset<100){
+   let take=Math.min(10,100-offset),data,batch;
+   while(take>=1){
+    const url="https://datasets-server.huggingface.co/rows?dataset="+encodeURIComponent(chosen.dataset)+"&config="+encodeURIComponent(chosen.config)+"&split="+encodeURIComponent(chosen.split)+"&offset="+offset+"&length="+take;
+    const res=await fetch(url,{headers:{"Accept":"application/json"}});
+    if(res.ok){data=await res.json();batch=(data.rows||[]).map(x=>x.row||x);break;}
+    const body=await res.text();if(res.status===422&&take>1){take=Math.max(1,Math.floor(take/2));continue;}
+    throw new Error("HF ROWS HTTP "+res.status+" "+body.slice(0,250));
+   }
+   if(!batch||!batch.length)break;liveHF.push(...batch);offset+=batch.length;
+   $i("integratedStatus").textContent="Persona 표본 "+liveHF.length+"행 조회 중…";
+   if(batch.length<take)break;
+  }
+  if(!liveHF.length)throw new Error("HF Persona 표본 0건");
+ }
+ async function loadKoshaIntegrated(){
+  let page=1,per=100,totalPages=1,total=null;
+  while(page<=totalPages){
+   const res=await fetch(KOSHA_URL+"/api/kosha/accidents?page="+page+"&per_page="+per,{headers:{"Accept":"application/json"}});
+   if(!res.ok)throw new Error("KOSHA API HTTP "+res.status+" "+(await res.text()).slice(0,250));
+   const data=await res.json();if(!Array.isArray(data.records))throw new Error("KOSHA records 배열 누락");
+   liveKosha.push(...data.records);
+   if(page===1){total=Number(data.metadata&&data.metadata.total_count)||null;if(total)totalPages=Math.ceil(total/per);}
+   $i("integratedStatus").textContent="KOSHA 사고 "+liveKosha.length.toLocaleString()+(total?" / "+total.toLocaleString():"")+"건 조회 중…";
+   if(data.count<per)break;page++;
+  }
+  if(!liveKosha.length)throw new Error("KOSHA 사고사례 0건");
+ }
+ async function loadIntegrated(){
+  const b=$i("loadIntegratedData");b.disabled=true;liveHF=[];liveKosha=[];integratedLoaded=false;
+  $i("integratedStatus").textContent="HF Persona 및 KOSHA API 연결 중…";
+  try{
+   await Promise.all([loadHFIntegrated(),loadKoshaIntegrated()]);
+   integratedLoaded=true;$i("integratedStatus").textContent="연결 성공 · Persona "+liveHF.length+"행 / KOSHA "+liveKosha.length+"건";
+   paintIntegrated();
+  }catch(e){$i("integratedStatus").textContent="연결 실패: "+e.message+" · 각 원천 API 상태를 확인하세요.";paintIntegrated();}
+  finally{b.disabled=false;}
+ }
+ Object.keys(equipment).forEach(name=>$i("integratedEquipment").add(new Option(name,name)));
+ $i("integratedEquipment").addEventListener("change",paintIntegrated);
+ $i("loadIntegratedData").addEventListener("click",loadIntegrated);
+ paintIntegrated();
+})();
+
 </script></body></html>
