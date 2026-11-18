@@ -1,0 +1,9 @@
+streamlit>=1.36
+pandas>=2.1
+numpy>=1.26
+networkx>=3.2
+plotly>=5.22
+datasets>=2.20
+huggingface-hub>=0.24
+scikit-learn>=1.4
+pytest>=8.0
