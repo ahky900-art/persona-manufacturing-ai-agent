@@ -148,6 +148,46 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <p>Persona는 작업자 개인의 성격·위험점수가 아니라 직무 전문성에 따라 위험을 검토하는 관점입니다. P노드가 A노드를 직접 발생시키는 인과관계가 아니라, 사고유형별 검토 책임과 전문영역을 연결합니다.</p>
 <p class="small">주요 Edge: HAS_FIELD → CLASSIFIED_AS(P1~P8) → REVIEWS(A1~A7) → CAN_OCCUR_IN(R1~R7) → INDICATED_BY(센서·작업허가·LOTO·검사) → MITIGATED_BY(방호·격리·출입통제·작업개선). F1~F5는 별도의 설비건전성 위험 경로입니다.</p>
 </div>
+
+<h3 style="margin-top:22px">Edge 연결 규칙 — 노드 간 관계 정의</h3>
+<p class="sub">각 Edge는 방향·관계 의미·연결 조건을 가집니다. Persona는 위험의 원인이 아니라 검토 전문영역이며, A→R은 사고유형이 현장 위험으로 나타나는 경로입니다.</p>
+<div class="threshold-wrap">
+<table class="threshold-table ontology-edge-table">
+<thead><tr><th>출발 노드 → 도착 노드</th><th>Edge 관계</th><th>연결 규칙 / 조건</th><th>판정 근거</th></tr></thead>
+<tbody>
+<tr><td>Hugging Face → P1~P8</td><td>CLASSIFIED_AS</td><td>직무·전문성 필드의 분류 키워드가 역할별 최소 점수를 충족할 때 연결. 다중 라벨 허용.</td><td>occupation, professional_persona, skills, detailed_persona 및 분류 점수</td></tr>
+<tr><td>KOSHA → A1~A7</td><td>TAGGED_AS</td><td>사고 제목·개요·원인·예방대책에서 유형별 핵심어 또는 동의어가 확인될 때 연결. 복수 유형 동시 태깅 허용.</td><td>원천 사고기록, 키워드 일치 문구, 태깅 신뢰도</td></tr>
+<tr><td>P1 → A4, A5, A7</td><td>REVIEWS</td><td>원료·재료 조성, 반응성, 분진·유해성, 수작업 취급조건이 해당 사고 메커니즘과 관련될 때.</td><td>원료 성적서, MSDS, 입도·수분·조성, 작업방법</td></tr>
+<tr><td>P2 → A1, A2, A3, A6, A7</td><td>REVIEWS</td><td>기계 구동·방호·정비·인양·에너지 격리 또는 정비 작업부하가 관련될 때.</td><td>설비상태, 가드·인터록, 정비이력, LOTO, 인양계획</td></tr>
+<tr><td>P3 → A1, A4, A6</td><td>REVIEWS</td><td>전기·계장·PLC·인터록·검지기·자동재기동 신호가 사고 경로에 관여할 때.</td><td>PLC 이벤트, 인터록 로그, 전압·누설전류, 가스검지기 상태</td></tr>
+<tr><td>P4 → A1~A7</td><td>REVIEWS</td><td>기동·정지·운전모드·생산부하·비정상 운전 또는 작업순서가 노출조건을 바꿀 때.</td><td>운전모드, 생산량, 작업표준, 알람·운전 이력</td></tr>
+<tr><td>P5 → A1~A7</td><td>CONTROLS</td><td>위험성평가·작업허가·보호구·출입통제·비상대응 등 예방통제의 적정성을 확인할 때.</td><td>위험성평가서, 작업허가서, 점검표, 교육·비상훈련 기록</td></tr>
+<tr><td>P6 → A1, A3, A7</td><td>REVIEWS</td><td>차량·보행자 동선, 하역·운송·인양 또는 중량물 수작업이 존재할 때.</td><td>차량 위치·속도, 크레인 하중, 동선계획, 작업인원</td></tr>
+<tr><td>P7 → A2, A5, A7</td><td>VERIFIES</td><td>측정·검사·시료채취·NDT 등 검사 작업이 고소·유해환경·반복동작 노출을 동반할 때.</td><td>검사작업허가, 측정값, 검사절차, 노출시간</td></tr>
+<tr><td>P8 → A1~A7</td><td>COORDINATES</td><td>도급·교대·동시작업·작업간섭·감독공백·인력부족이 통제 실패에 영향을 줄 때.</td><td>작업조정 기록, 교대일지, 도급작업계획, 감독자 배치</td></tr>
+<tr><td>A1 → R1</td><td>CAN_MANIFEST_AS</td><td>회전·이송부 접근 또는 정비 중 구동 가능성이 있고 방호·인터록·LOTO 통제가 불충분할 때.</td><td>가드 상태, 위험부 속도, 정비허가, LOTO 확인</td></tr>
+<tr><td>A2 → R2</td><td>CAN_MANIFEST_AS</td><td>고소·개구부 작업 중 추락방호가 없거나 작업자 접근이 통제되지 않을 때.</td><td>작업 위치, 난간·개구부 방호, 안전대 체결, 작업허가</td></tr>
+<tr><td>A3 → R3</td><td>CAN_MANIFEST_AS</td><td>차량·보행자 동선 중첩, 인양물 하부 진입, 충돌예측시간 또는 정격하중 기준 초과 시.</td><td>위치·속도, TTC, 크레인 하중률, 출입구역</td></tr>
+<tr><td>A4 → R4</td><td>CAN_MANIFEST_AS</td><td>가연성가스 누출·농도 상승 또는 고온·점화원·용융물 비산이 함께 존재할 때.</td><td>%LEL, 가스압력·유량, 화염·온도, 작업허가</td></tr>
+<tr><td>A5 → R5</td><td>CAN_MANIFEST_AS</td><td>밀폐공간·덕트·피트 진입 중 산소·유해가스 농도가 적정공기 기준을 벗어날 때.</td><td>O₂, CO, H₂S, CO₂, 환기상태, 진입허가</td></tr>
+<tr><td>A6 → R6</td><td>CAN_MANIFEST_AS</td><td>전기·유체·중력 등 위험에너지 격리 후 무전압·잔류에너지 제거가 확인되지 않을 때.</td><td>검전, LOTO, 접지, 차단기·누전차단기 상태</td></tr>
+<tr><td>A7 → R7</td><td>CAN_MANIFEST_AS</td><td>중량물·반복동작·불리한 자세·장시간 작업이 작업별 인간공학 관리기준을 초과할 때.</td><td>중량·빈도·시간, 자세평가, 작업자 증상·유해요인조사</td></tr>
+<tr><td>R1~R7 → 관측 신호</td><td>INDICATED_BY</td><td>위험별 필수 센서·설비상태·작업허가·작업자 위치 데이터가 유효하고 시간 동기화될 때만 평가.</td><td>센서 품질, 통신상태, 타임스탬프, 결측·이상치</td></tr>
+<tr><td>관측 신호 → R1~R7</td><td>TRIGGERS</td><td>노드에 정의된 AND/OR 조건이 성립하고 지속시간·히스테리시스 조건까지 충족하면 경보 상태로 전이.</td><td>Threshold 값, 지속시간, 재설정 조건, 신호 신뢰도</td></tr>
+<tr><td>R1~R7 → 통제조치</td><td>MITIGATED_BY</td><td>경보등급에 따라 작업중지·접근제한·에너지 격리·환기·보조장비·재평가 중 승인된 조치 실행.</td><td>현장 비상절차, 안전관리자 승인, 인터록 권한</td></tr>
+<tr><td>운전·원료·검사 데이터 → F1~F5</td><td>INDICATES_DEGRADATION</td><td>온도·조성·마모·열사이클·결함 데이터가 설비별 승인 운전창 또는 검사한계를 벗어날 때.</td><td>설비 사양, 내화물 grade, 설계 최소두께, 열화상·검사 이력</td></tr>
+</tbody></table></div>
+<h3 style="margin-top:20px">Edge 평가 순서 및 논리</h3>
+<div class="card">
+<ol>
+<li><b>데이터 유효성:</b> 센서 교정·통신·타임스탬프·결측을 먼저 검사합니다. 유효하지 않은 신호는 정상으로 간주하지 않고 '데이터 불확실' 상태로 분리합니다.</li>
+<li><b>노드 활성화:</b> 분류 근거가 확인되면 P/A 노드를 활성화합니다. Persona는 원인 점수가 아니라 검토 담당영역으로 연결합니다.</li>
+<li><b>위험 연결:</b> A→R 연결은 설비 위치·작업종류·노출조건이 일치할 때만 활성화합니다. 단순 키워드 일치만으로 현장 위험을 확정하지 않습니다.</li>
+<li><b>경보 판정:</b> AND/OR 조건, 지속시간, 복귀 임계값을 함께 적용합니다. 법정 기준·제조사 기준·현장 시범값을 별도 태그로 관리합니다.</li>
+<li><b>조치 및 피드백:</b> 승인된 통제조치 후 경보 해제 조건을 확인하고, 오경보·미탐지·실제 사고/아차사고를 기록해 규칙을 재검증합니다.</li>
+</ol>
+<p class="small">안전 핵심통제(예: 정비허가가 활성화된 상태에서 LOTO 미확인)는 다른 위험점수와 합산해 희석하지 않는 독립 고우선순위 규칙으로 처리합니다.</p>
+</div>
 <h3 style="margin-top:20px">Threshold 출처·설정 원칙</h3>
 <ul>
 <li>밀폐공간 적정공기 수치(O₂ 18% 이상 23.5% 미만, CO 30 ppm 미만, H₂S 10 ppm 미만, CO₂ 1.5% 미만)는 산업안전보건기준에 관한 규칙 제618조 기준입니다. <a href="https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1025460877" target="_blank" rel="noopener">법령 원문</a></li>
