@@ -27,6 +27,19 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .threshold-table th{background:#edf2f8;color:#233b5b}
 .threshold-table td b{color:#1d3e6b}
 @media(max-width:700px){.threshold-table{font-size:12px}}
+
+/* Explicit ontology nodes and risk thresholds */
+.ontology-flow{display:grid;grid-template-columns:minmax(150px,.75fr) minmax(220px,1.1fr) minmax(220px,1.05fr) minmax(285px,1.35fr);gap:13px;align-items:start;overflow-x:auto;padding:12px 2px}
+.ontology-lane{min-width:0;display:flex;flex-direction:column;gap:9px;position:relative}
+.ontology-lane h3{padding:10px 11px;border-radius:9px;background:#edf2f8;margin:0;min-height:44px}
+.ontology-lane:not(:last-child):after{content:"→";position:absolute;right:-13px;top:50%;z-index:2;color:#71839a;font-size:20px;font-weight:800}
+.ontology-node{border:1px solid var(--line);border-left:4px solid #8da4c2;border-radius:9px;background:#fff;padding:10px 11px;min-height:88px;box-shadow:0 2px 8px #172b4d08}
+.ontology-node b{display:block;font-size:13px;color:#1c3556;margin-bottom:4px}
+.ontology-node p{font-size:12px;line-height:1.4;color:#455468;margin:3px 0}
+.ontology-node small{display:block;font-size:11px;line-height:1.45;color:#65748a}
+.source-node{border-left-color:#5b8fd3}.persona-node{border-left-color:#56a17b}.accident-node{border-left-color:#d4a047}.risk-node{border-left-color:#c76c6c}
+.ontology-risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:10px}
+@media(max-width:900px){.ontology-flow{grid-template-columns:repeat(4,minmax(245px,1fr))}}
 </style></head><body>
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
@@ -79,50 +92,70 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <tr><td><b>근골격·수작업</b></td><td>내화물 보수·축로, 샘플 채취, 코일 결속·포장, 밸브·호스 취급</td><td>중량, 들기 빈도·시간, 자세(IMU/영상), 반복동작, 자각증상</td><td>작업별 REBA/RULA 등 인체공학 평가점수가 사업장 관리기준 초과, 또는 부담작업 평가 한계 초과</td><td>보조장치·2인 취급, 작업높이·동선 개선, 작업순환·재평가</td><td>근골격계 부담작업 유해요인조사 및 작업별 인간공학 평가</td></tr>
 </tbody></table></div>
 <p class="small">질식·전기 수치는 적용 법령과 예외 조항을 실제 작업 유형별로 대조해야 합니다. 이 표는 자동 작업중지 로직이 아니라 경보 설계 초안입니다.</p></section>
+
 <section id="ontology" class="panel">
 <h2>온톨로지 지식 그래프</h2>
-<p class="sub">Hugging Face 원천 데이터에서 출발해 Persona 유형, 산재 유형, 산업현장 위험으로 이어지는 4단계 지식 흐름입니다. 노드를 선택하면 분류 기준과 연결 근거를 확인할 수 있습니다.</p>
-<div class="ontology-legend"><span><i class="legend-dot" style="background:#dceafe"></i>원천 데이터·분류</span><span><i class="legend-dot" style="background:#e5f5ec"></i>검토 관점</span><span><i class="legend-dot" style="background:#fff0d8"></i>사고 유형</span><span><i class="legend-dot" style="background:#fce5e5"></i>현장 위험</span><span>실선: 데이터·분류 관계</span><span>점선: 검증이 필요한 추론 관계</span></div>
-<div class="ontology-wrap">
-<svg class="ontology-svg" viewBox="0 0 1120 570" role="img" aria-label="Hugging Face 데이터, Persona, 산재 유형, 산업현장 위험으로 연결되는 온톨로지 그래프">
-<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#8090a5"/></marker></defs>
-<!-- Main directional edges -->
-<path class="edge" d="M245 145 L300 145"/><text class="edge-label" x="272" y="128" text-anchor="middle">분류</text>
-<path class="edge dashed" d="M500 145 L555 145"/><text class="edge-label" x="527" y="128" text-anchor="middle">검토 관점</text>
-<path class="edge dashed" d="M755 145 L810 145"/><text class="edge-label" x="782" y="128" text-anchor="middle">현장 연계</text>
-<!-- lower evidence branches -->
-<path class="edge" d="M145 190 L145 270"/><text class="edge-label" x="155" y="235">필드·속성</text>
-<path class="edge" d="M400 190 L400 270"/><text class="edge-label" x="412" y="235">역할 기준</text>
-<path class="edge" d="M655 190 L655 270"/><text class="edge-label" x="667" y="235">사고 키워드</text>
-<path class="edge dashed" d="M910 190 L910 270"/><text class="edge-label" x="922" y="235">위험 경로</text>
-<!-- cross-links to risk mechanisms -->
-<path class="edge dashed" d="M655 345 C655 410 760 410 810 410"/><text class="edge-label" x="728" y="397">위험 시나리오 후보</text>
-<path class="edge" d="M910 345 L910 410"/><text class="edge-label" x="922" y="382">관측·통제</text>
-<!-- Main nodes -->
-<g class="graph-node" data-node="hf"><rect class="node selected" x="35" y="95" width="210" height="95" rx="13" fill="#dceafe" stroke="#6b94d2"/><text class="node-title" x="140" y="126" text-anchor="middle">① Hugging Face</text><text class="node-sub" x="140" y="149" text-anchor="middle">Nemotron Persona 원천</text><text class="node-sub" x="140" y="168" text-anchor="middle">occupation · skills · persona</text></g>
-<g class="graph-node" data-node="persona"><rect class="node" x="300" y="95" width="200" height="95" rx="13" fill="#e5f5ec" stroke="#65a887"/><text class="node-title" x="400" y="126" text-anchor="middle">② Persona 유형</text><text class="node-sub" x="400" y="149" text-anchor="middle">8개 기능적 검토 역할</text><text class="node-sub" x="400" y="168" text-anchor="middle">전문성·직무 근거</text></g>
-<g class="graph-node" data-node="accident"><rect class="node" x="555" y="95" width="200" height="95" rx="13" fill="#fff0d8" stroke="#d5a34d"/><text class="node-title" x="655" y="126" text-anchor="middle">③ 산재 유형</text><text class="node-sub" x="655" y="149" text-anchor="middle">끼임 · 추락 · 충돌 · 화재</text><text class="node-sub" x="655" y="168" text-anchor="middle">질식 · 감전 · 근골격</text></g>
-<g class="graph-node" data-node="risk"><rect class="node" x="810" y="95" width="275" height="95" rx="13" fill="#fce5e5" stroke="#d28a8a"/><text class="node-title" x="947" y="126" text-anchor="middle">④ 산업현장 Risk</text><text class="node-sub" x="947" y="149" text-anchor="middle">설비 건전성 + 작업자 안전</text><text class="node-sub" x="947" y="168" text-anchor="middle">공정·설비·작업 조건</text></g>
-<!-- detail cards -->
-<g class="graph-node" data-node="hf-fields"><rect class="node" x="35" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#a9bfdc"/><text class="node-title" x="145" y="298" text-anchor="middle">원천 필드</text><text class="node-sub" x="145" y="321" text-anchor="middle">직업 · 전문성 · 기술 · 경력</text></g>
-<g class="graph-node" data-node="persona-roles"><rect class="node" x="290" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#9bc7ae"/><text class="node-title" x="400" y="298" text-anchor="middle">역할 분류 기준</text><text class="node-sub" x="400" y="321" text-anchor="middle">키워드 · 필드 가중치 · 근거</text></g>
-<g class="graph-node" data-node="accident-tags"><rect class="node" x="545" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#d8b978"/><text class="node-title" x="655" y="298" text-anchor="middle">사고 포커스 태그</text><text class="node-sub" x="655" y="321" text-anchor="middle">사고 제목 · 원인 · 예방대책</text></g>
-<g class="graph-node" data-node="risk-path"><rect class="node" x="810" y="270" width="275" height="75" rx="10" fill="#fff" stroke="#d9aaaa"/><text class="node-title" x="947" y="298" text-anchor="middle">현장 위험 경로</text><text class="node-sub" x="947" y="321" text-anchor="middle">인자 → 상태 → 메커니즘 → 손상</text></g>
-<!-- lower outcome nodes -->
-<g class="graph-node" data-node="scenario"><rect class="node" x="545" y="410" width="220" height="85" rx="10" fill="#fff8eb" stroke="#d8b978"/><text class="node-title" x="655" y="440" text-anchor="middle">위험 시나리오</text><text class="node-sub" x="655" y="463" text-anchor="middle">사고유형 × 작업·설비 조건</text><text class="node-sub" x="655" y="480" text-anchor="middle">조건부 연결 가설</text></g>
-<g class="graph-node" data-node="monitor"><rect class="node" x="810" y="410" width="275" height="85" rx="10" fill="#f1f5fb" stroke="#9aabc2"/><text class="node-title" x="947" y="440" text-anchor="middle">감지 신호 · 통제조치</text><text class="node-sub" x="947" y="463" text-anchor="middle">센서·작업허가·LOTO·검사</text><text class="node-sub" x="947" y="480" text-anchor="middle">임계치 · 경보 · 관리자 확인</text></g>
-<text x="35" y="545" font-size="12" fill="#637083">노드를 클릭하면 상세 설명과 관계의 근거·검증 수준이 아래에 표시됩니다.</text>
-</svg></div>
-<div class="ontology-detail" id="ontologyDetail"><h3>① Hugging Face 원천 데이터</h3><p>Nemotron-Personas-Korea의 직무·전문성 관련 필드를 분류 입력으로 사용합니다. 실제 스키마 버전과 누락 필드를 확인한 뒤 사용해야 합니다.</p></div>
-<h3 style="margin-top:20px">엣지(관계) 정의</h3>
-<table class="ontology-edge-table"><thead><tr><th>출발 노드</th><th>관계(Edge)</th><th>도착 노드</th><th>관계 의미</th><th>근거 수준</th></tr></thead><tbody>
-<tr><td>Hugging Face</td><td>HAS_FIELD / DESCRIBES</td><td>Persona 유형</td><td>직무·전문성 필드를 읽어 역할 점수를 계산</td><td>데이터 필드 + 규칙</td></tr>
-<tr><td>Persona 유형</td><td>REVIEWS_THROUGH</td><td>산재 유형</td><td>역할별 전문 관점으로 사고 유형을 검토</td><td>설계 관계, 사고 예측 인과 아님</td></tr>
-<tr><td>산재 유형</td><td>CAN_OCCUR_IN / ASSOCIATED_WITH</td><td>산업현장 Risk</td><td>사고 유형이 발생할 수 있는 설비·작업 조건을 연결</td><td>KOSHA 사례 + 현장 검토 필요</td></tr>
-<tr><td>산업현장 Risk</td><td>INDICATED_BY</td><td>감지 신호</td><td>위험 경로를 관측할 수 있는 계측·점검 후보</td><td>현장 데이터로 검증 필요</td></tr>
-<tr><td>산업현장 Risk</td><td>MITIGATED_BY</td><td>통제조치</td><td>위험을 낮추는 작업·설비 통제</td><td>절차·기준 검토 필요</td></tr>
-</tbody></table>
-<p class="small">주의: Persona → 산재 유형 → 산업현장 Risk의 엣지는 곧바로 인과관계나 사고확률을 뜻하지 않습니다. Persona는 분석 관점이고, 산재-설비 연결은 실제 공정·작업 조건이 확인될 때만 유효한 시나리오로 취급합니다. 설비 손상 위험과 인명 안전 위험도 별도 평가합니다.</p>
+<p class="sub">원천 데이터 → Persona 8개 → 산재 유형 7개 → 산업현장 Risk 7개로 노드를 분리했습니다. 각 노드는 검토 관점·사고 유형·현장 위험을 개별 식별하며, 임계값은 법정 기준과 현장 시범 설정값을 구분합니다.</p>
+<div class="ontology-legend"><span><i class="legend-dot" style="background:#dceafe"></i>원천 데이터</span><span><i class="legend-dot" style="background:#e5f5ec"></i>Persona 8개</span><span><i class="legend-dot" style="background:#fff0d8"></i>산재 7개</span><span><i class="legend-dot" style="background:#fce5e5"></i>산업현장 Risk·Threshold</span></div>
+<div class="ontology-flow">
+ <div class="ontology-lane source-lane">
+  <h3>① 원천 데이터</h3>
+  <article class="ontology-node source-node"><b>Hugging Face</b><p>Nemotron-Personas-Korea</p><small>occupation · professional_persona · skills · detailed_persona</small></article>
+  <article class="ontology-node source-node"><b>KOSHA 사고사례</b><p>사고 제목 · 발생 개요 · 원인 · 예방대책</p><small>원천 사고기록에서 다중 태깅</small></article>
+ </div>
+ <div class="ontology-lane persona-lane">
+  <h3>② Persona 8개 노드</h3>
+  <article class="ontology-node persona-node"><b>P1 공정·원료·재료</b><p>원료 성상·조성·반응성·공정조건 검토</p><small>주요 렌즈: 공정편차·화학반응·열화</small></article>
+  <article class="ontology-node persona-node"><b>P2 설비·기계·정비</b><p>회전·구동·유체설비·정비·에너지 격리</p><small>주요 렌즈: 방호실패·기계고장·LOTO</small></article>
+  <article class="ontology-node persona-node"><b>P3 전기·계장·자동화</b><p>전기·PLC·센서·인터록·계측</p><small>주요 렌즈: 감전·아크·인터록 오류</small></article>
+  <article class="ontology-node persona-node"><b>P4 생산·운전</b><p>운전모드·생산부하·기동정지·작업순서</p><small>주요 렌즈: 비정상 운전·절차 이탈</small></article>
+  <article class="ontology-node persona-node"><b>P5 안전·환경·보건</b><p>위험성평가·작업허가·유해인자·보호조치</p><small>주요 렌즈: 모든 사고유형의 예방통제</small></article>
+  <article class="ontology-node persona-node"><b>P6 물류·운송·인양</b><p>지게차·크레인·하역·운반·중량물</p><small>주요 렌즈: 충돌·낙하·협착</small></article>
+  <article class="ontology-node persona-node"><b>P7 품질·검사·분석</b><p>검사·시험·측정·NDT·시료채취</p><small>주요 렌즈: 이상징후·측정누락·작업노출</small></article>
+  <article class="ontology-node persona-node"><b>P8 관리·감독·인력운영</b><p>작업조정·교대·도급·인력·동시작업</p><small>주요 렌즈: 감독공백·작업간섭·허가누락</small></article>
+ </div>
+ <div class="ontology-lane accident-lane">
+  <h3>③ 산재 유형 7개 노드</h3>
+  <article class="ontology-node accident-node"><b>A1 끼임·말림·협착</b><p>컨베이어·롤·권취기·회전축·정비 중 가동</p><small>연결 렌즈: P2·P3·P4·P5·P6·P8</small></article>
+  <article class="ontology-node accident-node"><b>A2 추락·전도</b><p>고로 상부·집진기·탱크·플랫폼·개구부</p><small>연결 렌즈: P2·P4·P5·P7·P8</small></article>
+  <article class="ontology-node accident-node"><b>A3 충돌·낙하물</b><p>천장크레인·지게차·스크랩·용선 운반</p><small>연결 렌즈: P2·P5·P6·P8</small></article>
+  <article class="ontology-node accident-node"><b>A4 화재·폭발·화상</b><p>코크스·고로가스·전로·용선·용강·고온표면</p><small>연결 렌즈: P1·P3·P4·P5·P8</small></article>
+  <article class="ontology-node accident-node"><b>A5 질식·중독·유해물질</b><p>가스배관·집진기·덕트·피트·밀폐공간</p><small>연결 렌즈: P1·P4·P5·P7·P8</small></article>
+  <article class="ontology-node accident-node"><b>A6 감전·전기·에너지</b><p>수배전반·압연모터·전기로·이동형 공구</p><small>연결 렌즈: P2·P3·P4·P5·P8</small></article>
+  <article class="ontology-node accident-node"><b>A7 근골격·수작업</b><p>내화물 보수·샘플링·코일 결속·중량물 취급</p><small>연결 렌즈: P1·P2·P5·P7·P8</small></article>
+ </div>
+ <div class="ontology-lane risk-lane">
+  <h3>④ 산업현장 Risk 7개 노드</h3>
+  <article class="ontology-node risk-node"><b>R1 회전·이송부 협착 위험</b><p>방호문·인터록·LOTO 상태와 구동부 작동이 충돌</p><small>Threshold (방호문 열림=1 AND 위험부 속도&gt;0 rpm) 또는 정비허가=1 AND LOTO 확인=0</small></article>
+  <article class="ontology-node risk-node"><b>R2 고소·개구부 추락 위험</b><p>상부작업·난간·발판·개구부 방호 불량</p><small>Threshold (상부 난간 높이&lt;0.90 m 또는 개구부 방호 미설치); 작업면 추락위험은 작업별 평가</small></article>
+  <article class="ontology-node risk-node"><b>R3 차량·중량물 충돌/낙하 위험</b><p>보행자-차량 동선 중첩·인양물 하부 진입·과부하</p><small>Threshold (충돌예측시간 TTC≤3 s: 시범 경보값) 또는 크레인 하중≥정격 90% 사전경보·≥100% 운전제한 검토</small></article>
+  <article class="ontology-node risk-node"><b>R4 가연성가스·고온 화재 위험</b><p>고로·코크스 가스 누출, 점화원, 용융물 비산</p><small>Threshold (가연성가스 10% LEL 사전경보 / 20% LEL 고경보: 검지기·공정별 승인 설정값)</small></article>
+  <article class="ontology-node risk-node"><b>R5 산소결핍·유해가스 노출 위험</b><p>덕트·집진기·탱크·피트 밀폐공간 진입</p><small>Threshold (O₂&lt;18% 또는 ≥23.5%; CO≥30 ppm; H₂S≥10 ppm; CO₂≥1.5%)</small></article>
+  <article class="ontology-node risk-node"><b>R6 전기·잔류에너지 위험</b><p>정비 중 무전압 미확인·오접속·재기동</p><small>Threshold (LOTO 작업 중 검전 전압&gt;0 V이면 진입금지); 적용 대상 누전차단기 (≤30 mA, ≤0.03 s)</small></article>
+  <article class="ontology-node risk-node"><b>R7 반복·중량 수작업 부담 위험</b><p>축로·내화물 보수·샘플링·코일 포장 작업</p><small>Threshold (REBA≥8 고위험 조치; RULA≥5 개선 검토, ≥7 즉시 개선 검토: 선별평가 기준)</small></article>
+ </div>
+</div>
+<h3 style="margin-top:24px">설비 건전성 Risk — 내화물·열설비 연계</h3>
+<div class="ontology-risk-grid">
+ <article class="ontology-node risk-node"><b>F1 과열·핫스팟</b><p>버너 편향·가스 편류·냉각 이상 → 국부 온도 상승</p><small>Threshold (설비별 정상 기준선 대비 +2σ 또는 인접부 온도편차 관리한계 초과; 시계열 기준선으로 설정)</small></article>
+ <article class="ontology-node risk-node"><b>F2 침식·마모</b><p>분진·촉매·회분·슬래그 충돌 → 라이닝 두께 감소</p><small>Threshold (측정 잔여두께≤설계 최소두께 또는 두께 감소율이 정비주기 내 허용손실 초과)</small></article>
+ <article class="ontology-node risk-node"><b>F3 화학부식·용손</b><p>슬래그·알칼리·염화물·황화물 조성 변화 → 침투·반응층</p><small>Threshold (원료·슬래그 조성이 승인된 내화물 적합 운전창 이탈)</small></article>
+ <article class="ontology-node risk-node"><b>F4 열충격·열피로</b><p>기동정지·급가열·급냉각 → 열응력·균열·스폴링</p><small>Threshold (승강온 속도&gt;제조사 승인 dry-out/운전 램프 또는 열사이클 설계한계)</small></article>
+ <article class="ontology-node risk-node"><b>F5 박락·구조건전성 저하</b><p>앵커 부식·조인트 열화·시공결함·캐스터블 건조불량</p><small>Threshold (앵커·조인트 결함 검출=1 또는 열화상 핫스팟·두께검사 기준 초과)</small></article>
+</div>
+<div class="ontology-detail" id="ontologyDetail">
+<h3>노드와 Edge 해석</h3>
+<p>Persona는 작업자 개인의 성격·위험점수가 아니라 직무 전문성에 따라 위험을 검토하는 관점입니다. P노드가 A노드를 직접 발생시키는 인과관계가 아니라, 사고유형별 검토 책임과 전문영역을 연결합니다.</p>
+<p class="small">주요 Edge: HAS_FIELD → CLASSIFIED_AS(P1~P8) → REVIEWS(A1~A7) → CAN_OCCUR_IN(R1~R7) → INDICATED_BY(센서·작업허가·LOTO·검사) → MITIGATED_BY(방호·격리·출입통제·작업개선). F1~F5는 별도의 설비건전성 위험 경로입니다.</p>
+</div>
+<h3 style="margin-top:20px">Threshold 출처·설정 원칙</h3>
+<ul>
+<li>밀폐공간 적정공기 수치(O₂ 18% 이상 23.5% 미만, CO 30 ppm 미만, H₂S 10 ppm 미만, CO₂ 1.5% 미만)는 산업안전보건기준에 관한 규칙 제618조 기준입니다. <a href="https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1025460877" target="_blank" rel="noopener">법령 원문</a></li>
+<li>안전난간 상부 난간대 높이 0.90 m 이상은 같은 규칙 제13조 기준입니다. <a href="https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1024005231" target="_blank" rel="noopener">법령 원문</a></li>
+<li>TTC 3초, 크레인 90% 사전경보, LEL 10%/20%, REBA·RULA 점수는 일률적인 법정 기준이 아닙니다. 현장 위험성평가·제조사 사양·검증된 정지거리로 확정해야 합니다.</li>
+<li>F1~F5의 온도·두께·조성 한계는 설비·내화물 grade·시공두께·운전조건에 따라 달라집니다. 현장 설계값·제조사 권장값·검사이력을 연결해야 합니다.</li>
+</ul>
+<p class="small">중요: 본 그래프는 정적 설계·검토 화면이며 실시간 센서 연동이나 자동 작업중지 기능이 아닙니다. 법정 기준은 작업·설비별 적용범위를 확인하고, 시범 경보값은 안전관리자·설비 담당자 승인 후 사용해야 합니다.</p>
 </section>
 <section id="actualdata" class="panel">
 <h2>실제 데이터 탭 — Hugging Face & KOSHA API</h2>
