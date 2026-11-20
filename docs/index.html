@@ -1,195 +1,278 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Persona · 산업재해 분류 근거 대시보드</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Persona 기반 제조업 사고 포커스 및 산업설비 위험경로 탐색 대시보드"><title>Persona Manufacturing AI Safety Agent</title>
 <style>
-:root{--bg:#f4f6fa;--panel:#fff;--ink:#172437;--muted:#65748a;--line:#dbe2eb;--blue:#2459a6;--bluebg:#edf3fc;--amber:#9b6811;--amberbg:#fff6e6;--green:#137547;--greenbg:#eaf6ef}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-header{background:#142944;color:#fff;padding:28px max(20px,calc((100vw - 1120px)/2))}header small{color:#bdd0ec;font-weight:700;letter-spacing:.08em}h1{margin:6px 0;font-size:clamp(24px,4vw,34px)}header p{margin:4px 0;color:#d7e1ef;max-width:850px}
-main{max-width:1120px;margin:24px auto;padding:0 18px 60px}.status{padding:12px 15px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-bottom:18px}.status.error{background:#fff1f0;border-color:#f1c5c1;color:#8c271e}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:18px 0}.step{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px;font-weight:700}.step b{display:block;color:var(--blue);font-size:12px}.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin:14px 0}.panel h2{font-size:20px;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 15px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:11px}.card{border:1px solid var(--line);border-radius:9px;padding:13px;background:#fff}.card h3{margin:0 0 5px;font-size:16px}.muted,.small{color:var(--muted)}.small{font-size:12px}.count{font-size:25px;font-weight:800;color:var(--blue)}.tag{display:inline-block;background:var(--bluebg);color:#244f8b;border-radius:20px;padding:2px 8px;margin:3px 3px 0 0;font-size:12px}.field{background:#f6f8fb;border-radius:7px;padding:9px;margin-top:8px;font-size:13px}.record{border-top:1px solid var(--line);padding:12px 0}.record:first-child{border-top:0}.record summary{cursor:pointer;font-weight:700}.pill{display:inline-block;border-radius:20px;padding:2px 8px;background:var(--amberbg);color:var(--amber);font-size:12px}.note{background:#f6f8fb;border-left:3px solid #8da4c4;padding:10px 12px;border-radius:5px;color:#4c5b70;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.alarm-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1050px}.alarm-table th,.alarm-table td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}.alarm-table th{background:#edf2f8;color:#233b5b}.alarm-table td b{color:#1d3e6b}button{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.bar{height:7px;background:#e8edf4;border-radius:9px;overflow:hidden;margin:8px 0}.bar span{display:block;height:100%;background:var(--blue)}.empty{padding:18px;text-align:center;color:var(--muted);background:#f8fafc;border-radius:8px}
-@media(max-width:720px){.steps{grid-template-columns:1fr 1fr}.panel{padding:15px}}
-</style></head>
-<body>
-<header><small>MANUFACTURING AI · DATA EXPLAINABILITY</small><h1>Persona와 산업재해 분류 근거</h1><p>실제 Hugging Face Persona API와 KOSHA 산업재해 API를 조회하고, 8개 Persona 및 사고유형 분류가 어떤 원천 필드와 키워드 기준으로 만들어졌는지 설명합니다.</p></header>
+:root{--bg:#f4f6fa;--panel:#fff;--ink:#182230;--muted:#637083;--line:#dce2ea;--blue:#2257a5;--blue2:#eaf1fc;--red:#b42318;--amber:#9a6700;--green:#087443;--shadow:0 4px 18px #172b4d0c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:#12233d;color:white;padding:26px max(22px,calc((100vw - 1200px)/2)) 22px}header .eyebrow{font-size:12px;letter-spacing:.12em;color:#a9c6f2;font-weight:700}h1{margin:7px 0;font-size:clamp(24px,3vw,34px)}header p{margin:4px 0;color:#d2dced;max-width:850px}
+main{max-width:1200px;margin:24px auto;padding:0 18px 60px}.notice{background:#fff7e6;border:1px solid #f0d79a;border-radius:10px;padding:12px 15px;color:#684900;margin-bottom:18px}
+nav{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0}nav button,nav a,.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:650}nav button.active,.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+section.panel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:22px;box-shadow:var(--shadow)}section.panel.active{display:block}section.panel:target{display:block;scroll-margin-top:18px}nav a{display:inline-block;text-decoration:none}
+h2{font-size:22px;margin:0 0 6px}h3{font-size:16px;margin:0 0 8px}.sub{color:var(--muted);margin:0 0 18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:10px;padding:14px;background:white}.card p{margin:6px 0;color:var(--muted)}.kpi{font-size:28px;font-weight:750}.tag{display:inline-block;padding:3px 8px;border-radius:20px;background:var(--blue2);color:var(--blue);font-size:12px;margin:3px 3px 0 0}
+label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd3df;border-radius:8px;font:inherit;background:white}textarea{min-height:100px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.result{margin-top:14px;padding:14px;background:#f6f8fb;border-radius:9px;border:1px solid var(--line)}.bar{height:8px;background:#e8edf4;border-radius:9px;overflow:hidden;margin:7px 0}.bar span{display:block;height:100%;background:#356ac0}.small{font-size:12px;color:var(--muted)}.risk{border-left:4px solid #d39a27}.risk strong{color:#7c5100}.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}.chain span{background:#edf2f8;padding:8px 10px;border-radius:7px}.chain b{color:var(--muted)}table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:9px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f6f8fb}.hidden{display:none}
+@media(max-width:700px){.row{grid-template-columns:1fr}section.panel{padding:15px}header{padding:22px 18px}}
+
+/* Ontology graph */
+.ontology-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#fbfcfe,#f3f6fb);padding:12px}
+.ontology-svg{display:block;width:100%;min-width:900px;height:auto}.ontology-svg .node{cursor:pointer;stroke-width:2}.ontology-svg .node:hover,.ontology-svg .node.selected{stroke:#172b4d;stroke-width:4}.ontology-svg text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;pointer-events:none}.ontology-svg .edge{fill:none;stroke:#8090a5;stroke-width:2.2;marker-end:url(#arrow)}.ontology-svg .edge.dashed{stroke-dasharray:7 6;stroke:#b17a20}.ontology-svg .edge-label{font-size:12px;fill:#536174}.ontology-svg .node-title{font-size:15px;font-weight:750;fill:#172b4d}.ontology-svg .node-sub{font-size:11px;fill:#46556a}.ontology-detail{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:15px;background:#fff}.ontology-legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;color:var(--muted);font-size:12px}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.ontology-edge-table td:first-child{font-weight:700;white-space:nowrap}
+
+.api-status{padding:12px 14px;border:1px solid #b8c9e2;border-radius:9px;background:#f2f7ff;margin:12px 0;color:#23436e}
+.api-status.error{border-color:#e2b7b7;background:#fff3f3;color:#8b2424}
+.api-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.api-kpis .card{padding:12px}.api-count{font-size:25px;font-weight:800;color:var(--blue)}
+.api-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:12px}
+.api-record{border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0;background:#fbfcfe}
+.api-record summary{cursor:pointer;font-weight:650}
+.threshold-wrap{overflow-x:auto;margin-top:14px}.threshold-table{min-width:1100px;font-size:13px}
+.threshold-table th,.threshold-table td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}
+.threshold-table th{background:#edf2f8;color:#233b5b}
+.threshold-table td b{color:#1d3e6b}
+@media(max-width:700px){.threshold-table{font-size:12px}}
+</style></head><body>
+<header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
-<div class="status" id="status">두 데이터 API를 조회하고 있습니다…</div>
-<div class="steps">
- <div class="step"><b>STEP 01</b>Hugging Face API</div>
- <div class="step"><b>STEP 02</b>Persona 8개 분류 기준</div>
- <div class="step"><b>STEP 03</b>KOSHA 산재 API</div>
- <div class="step"><b>STEP 04</b>산재 유형 분류 기준</div>
+<div class="notice"><b>중요한 한계:</b> 이 페이지는 GitHub Pages에서 실행되는 정적 분석 데모입니다. 실시간 PLC·센서·작업자 위치 데이터에 연결되어 있지 않으며, 표시된 위험 경로는 현장 검증 전의 조건부 가설입니다. Persona로 개인의 사고확률을 예측하지 않습니다.</div>
+<nav id="tabs"><button class="active" data-tab="overview">개요</button><button data-tab="persona">Persona 분류</button><button data-tab="accident">사고 포커스</button><button data-tab="equipment">산업설비 Risk</button><button data-tab="safety">작업자 안전</button><button data-tab="actualdata">실제 데이터 API</button><a href="#ontology" aria-label="온톨로지 그래프 바로 열기">온톨로지 그래프</a><button data-tab="method">검증·출처</button></nav>
+<section id="overview" class="panel active"><h2>분석 파이프라인</h2><p class="sub">합성 인물 특성으로 위험도를 계산하는 것이 아니라, 전문성에 따라 검토할 관점을 나누고 실제 설비·작업 데이터로 위험을 확인합니다.</p>
+<div class="chain"><span>Hugging Face Persona</span><b>→</b><span>직무 근거 분류</span><b>→</b><span>KOSHA 사고 포커스</span><b>→</b><span>설비 온톨로지</span><b>→</b><span>관측 후보·현장 검토</span></div>
+<div class="grid"><div class="card"><div class="small">기능적 Persona 역할</div><div class="kpi">8</div><p>직무·전문성 키워드 기반 다중 분류</p></div><div class="card"><div class="small">사고 포커스 태그</div><div class="kpi">7</div><p>사고 서술에서 위험유형 추출</p></div><div class="card"><div class="small">산업설비 프로파일</div><div class="kpi">11</div><p>Refractory 저장소 기반 설비군</p></div><div class="card"><div class="small">실시간 데이터 연동</div><div class="kpi">0</div><p>현재는 정적 데모, 실시간 감지 아님</p></div></div>
+<h3 style="margin-top:20px">핵심 설계 원칙</h3><ul><li>Persona는 검토 우선순위·질문을 제공하며 안전등급을 결정하지 않습니다.</li><li>사고사례 태깅은 사고 후 서술의 검색·분류이며 사고 발생확률이 아닙니다.</li><li>설비 열화와 작업자 안전은 별도 위험 체계로 다룹니다.</li><li>핵심 통제 실패(예: 정비 중 LOTO 미확인)는 종합점수와 별개로 확인합니다.</li></ul>
+<div class="card" style="margin-top:16px;border-color:#9bb5dc;background:#f7faff">
+<h3>온톨로지 지식 그래프</h3>
+<p>Hugging Face → Persona → 산재 유형 → 산업현장 Risk의 노드와 엣지를 한 화면에서 탐색합니다.</p>
+<a class="btn primary" id="openOntology" href="#ontology">온톨로지 그래프 바로 열기</a>
+</div></section>
+
+<section id="persona" class="panel"><h2>Hugging Face Persona 분류 기준</h2><p class="sub">직무 맥락에 근거해 8개 기능적 검토 역할을 다중 분류합니다. 샘플 문장을 입력해 키워드 매칭이 어떻게 작동하는지 시험할 수 있습니다.</p>
+<div class="grid" id="roleCards"></div>
+<div class="card" style="margin-top:16px"><h3>샘플 Persona 분류기</h3><label for="personaText">직무·전문성 서술</label><textarea id="personaText">설비보전 엔지니어로 회전기계, 펌프, 베어링 진동분석과 예방정비를 담당한다.</textarea><button class="btn primary" id="classifyPersona">분류 실행</button><div id="personaResult" class="result">입력 문장에서 직무 키워드를 찾아 역할별 근거를 표시합니다.</div></div>
+<h3 style="margin-top:18px">필드별 가중치</h3><table><thead><tr><th>필드</th><th>가중치</th><th>해석</th></tr></thead><tbody><tr><td>occupation</td><td>4</td><td>직업명·직무</td></tr><tr><td>professional_persona</td><td>4</td><td>전문 업무분야</td></tr><tr><td>skills_and_expertise_list</td><td>3</td><td>명시적 기술</td></tr><tr><td>skills_and_expertise</td><td>2</td><td>서술형 전문성</td></tr><tr><td>detailed_persona</td><td>2</td><td>상세 페르소나의 직무 단서</td></tr><tr><td>career_goals_and_ambitions</td><td>1</td><td>희망 직무·분야</td></tr><tr><td>persona</td><td>1</td><td>종합 서술의 보조 근거</td></tr></tbody></table>
+<p class="small">제외: OCEAN·MBTI, 성별·연령·건강·가족·소득·지역, 취미·여행·요리 등 비직무 필드. 이들은 개인 위험점수나 역할 배정에 사용하지 않습니다. 현재 가중치는 실증 최적화된 값이 아닌 초기 규칙값입니다.</p>
+<h3 style="margin-top:20px">왜 8개 Persona인가?</h3>
+<p>8개는 데이터에서 통계적으로 자동 발견된 최적 군집 수가 아닙니다. 제조현장의 위험을 서로 다른 전문 업무 관점에서 검토하기 위한 <b>기능 기반 분류체계</b>입니다. 기술적 위험 발생 영역(공정·설비·전기·운전), 예방·이동·검증 기능(안전·물류·품질), 조직적 통제(관리·감독)를 함께 포함하도록 설계했습니다.</p>
+<div class="grid">
+<div class="card"><h3>① 공정·원료·재료</h3><p>원료 조성·물성·반응성과 공정조건 변화의 영향을 검토합니다.</p></div>
+<div class="card"><h3>② 설비·기계·정비</h3><p>기계적 위험, 설비 건전성, 정비 중 에너지 격리를 검토합니다.</p></div>
+<div class="card"><h3>③ 전기·계장·자동화</h3><p>전기 에너지, 센서, 인터록, 제어 및 자동 재기동 위험을 검토합니다.</p></div>
+<div class="card"><h3>④ 생산·운전</h3><p>운전모드, 생산부하, 기동·정지와 비정상 운전조건을 검토합니다.</p></div>
+<div class="card"><h3>⑤ 안전·환경·보건</h3><p>위험성평가, 작업허가, 보호조치 및 유해인자를 검토합니다.</p></div>
+<div class="card"><h3>⑥ 물류·운송·인양</h3><p>차량 동선, 하역, 중량물 이동과 인양 위험을 검토합니다.</p></div>
+<div class="card"><h3>⑦ 품질·검사·분석</h3><p>검사·측정·시료채취와 결함 조기발견 기능을 반영합니다.</p></div>
+<div class="card"><h3>⑧ 관리·감독·인력운영</h3><p>교대, 도급, 작업 간섭, 인력배치와 의사소통을 검토합니다.</p></div>
 </div>
-<section class="panel">
- <h2>01. Hugging Face Persona 원천 데이터</h2>
- <p class="sub">Dataset: nvidia/Nemotron-Personas-Korea · datasets-server API</p>
- <div class="grid">
-  <div class="card"><div class="small">조회한 Persona 레코드</div><div class="count" id="hfCount">—</div><div class="small" id="hfMeta">API 조회 전</div></div>
-  <div class="card"><div class="small">분류에 사용한 필드</div><p>occupation · professional_persona · skills_and_expertise_list · skills_and_expertise · detailed_persona · career_goals_and_ambitions · persona</p></div>
- </div>
- <div class="actions"><button id="reload">데이터 다시 조회</button></div>
- <div class="note" style="margin-top:12px">현재 구현은 Hugging Face 전체 데이터셋을 전수 학습한 모델이 아닙니다. datasets-server의 default/train에서 최대 100개 레코드를 표본 조회해 규칙 기반으로 분류합니다. 표본 결과와 전체 데이터셋 통계를 혼동하지 않습니다.</div>
- <div id="hfSamples" style="margin-top:12px"></div>
+<p class="small">8개라는 숫자 자체의 최적성은 아직 입증되지 않았습니다. 전문가 라벨과 실제 직무 표본으로 분류 중복·누락 및 Macro-F1을 검증해야 합니다.</p></section>
+
+<section id="accident" class="panel"><h2>사고사례 포커스 분류</h2><p class="sub">사고 제목·개요·원인·예방대책 문장을 위험 키워드로 다중 태깅합니다. 아래는 사용자가 입력한 사례의 규칙 기반 데모입니다.</p><label for="accidentText">사고사례 문장</label><textarea id="accidentText">회전 롤러의 이물질을 제거하던 작업자가 설비 정지와 잠금표찰(LOTO)을 하지 않아 회전부에 끼임</textarea><button class="btn primary" id="classifyAccident">사고 포커스 분석</button><div id="accidentResult" class="result">분류 결과가 여기에 표시됩니다.</div>
+<div class="grid" id="focusCards" style="margin-top:16px"></div></section>
+
+<section id="equipment" class="panel"><h2>산업설비별 손상 위험경로</h2><p class="sub">ahky900-art/refractory의 ontology-enhanced.js 및 maintenance-planning.js를 참고해 11개 설비 프로파일을 연결했습니다. 아래 신호는 계측 후보이지 현재 감지 중인 신호가 아닙니다.</p><label for="equipmentSelect">설비 선택</label><select id="equipmentSelect"></select><div id="equipmentDetail" style="margin-top:14px"></div></section>
+<section id="safety" class="panel"><h2>작업자 안전 위험 체크</h2><p class="sub">설비건전성 위험과 분리된 인명안전 체크 항목입니다. 실제 감지 결과가 아니라 작업허가·현장점검·센서 연동 시 확인할 통제 목록입니다.</p><div id="safetyCards" class="grid"></div>
+<h3 style="margin-top:24px">제철소 현장 적용 — 7개 산재유형별 Threshold 알람</h3>
+<p class="sub">원료 하역·이송 → 코크스/소결 → 고로 → 제강·연주 → 압연·출하가 있는 일관제철소를 가정합니다.</p>
+<div class="notice">Threshold는 숫자형뿐 아니라 상태형(Boolean)도 포함합니다. 아래 표는 설계 예시이며 현재 센서에 연결된 실시간 경보가 아닙니다. 법정 기준·제조사 기준·사업장 위험성평가 기준을 구분하고, 근거 없는 공통 임계값은 임의로 지정하지 않습니다.</div>
+<div class="threshold-wrap"><table class="threshold-table"><thead><tr><th>산재 유형</th><th>위험 장소·상황</th><th>측정 신호</th><th>Threshold 알람 조건 예시</th><th>권고 조치</th><th>기준 성격</th></tr></thead><tbody>
+<tr><td><b>끼임·말림·협착</b></td><td>원료·소결 컨베이어, 압연 롤, 코일 이송장치 정비</td><td>방호문·인터록, 설비 운전상태, LOTO, 작업허가·작업자 위치</td><td>방호문 열림 AND 위험부 구동 중, 또는 정비허가 중 에너지 격리 미확인</td><td>구동 정지·재기동 금지, 에너지 차단·잠금표지 확인</td><td>안전보건규칙 제92조 및 설비 인터록 설계기준</td></tr>
+<tr><td><b>추락·전도</b></td><td>고로·코크스 오븐 상부, 집진기·탱크, 크레인 거더·플랫폼</td><td>작업허가, 작업자 위치, 난간·개구부 덮개, 안전대 체결·추락감지</td><td>고소작업 구역 진입 AND 난간·개구부 방호 미확인, 또는 필수 안전대 미체결</td><td>작업중지·출입통제, 방호상태 확인, 구조계획 실행</td><td>장소·작업별 법정 방호조치 및 사업장 고소작업 기준</td></tr>
+<tr><td><b>충돌·낙하물</b></td><td>스크랩 야드, 용선·용강 운반, 천장크레인, 지게차 교차구역</td><td>작업자·차량 위치, 차량 속도, 크레인 하중·권상, 출입통제</td><td>예상 충돌시간이 제동·회피시간 이하, 또는 크레인 하중이 정격·하중곡선 한계 접근/초과</td><td>차량 감속·정지, 크레인 동작 제한, 위험구역 대피</td><td>제조사 정격하중·하중곡선 및 현장별 제동거리·동선 검증값</td></tr>
+<tr><td><b>화재·폭발·화상</b></td><td>코크스·고로·전로 가스 배관, 밸브실, 용선·용강 출강구역</td><td>가연성가스(%LEL), CO·H₂, 가스압력·유량, 화염감지, 열화상</td><td>가스 검지기 설정 경보점 초과, 압력 급락·유량 불균형, 비정상 화염·허용온도 초과</td><td>가스 차단·환기·점화원 통제, 출입통제, 비상대응</td><td>안전보건규칙 제232조 및 가스별 위험성평가·검지기 설정</td></tr>
+<tr><td><b>질식·중독·유해물질</b></td><td>가스 배관·집진기·탱크·피트 내부, 밀폐공간 정비</td><td>O₂, CO, H₂S, CO₂, 복합가스측정기, 환기상태</td><td>적정공기 범위 이탈: O₂ 18% 미만 또는 23.5% 초과, CO 30 ppm 초과, H₂S 10 ppm 초과, CO₂ 1.5% 초과</td><td>즉시 대피·출입금지, 환기, 재측정, 보호장비 없는 구조 진입 금지</td><td>안전보건규칙 제618조의 적정공기 정의 및 제619조</td></tr>
+<tr><td><b>감전·전기·에너지</b></td><td>압연 모터·고압 수배전반, 전기로 전원, 이동형 전동공구</td><td>전압 유무, 누설전류, 절연감시장치, 누전차단기, LOTO·접지</td><td>정비허가 중 전압 검출 또는 LOTO 불일치. 적용 대상 누전차단기 정격감도전류 30mA 이하·작동시간 0.03초 이하 여부</td><td>전원 차단·접근 금지, 검전·방전·접지, 전기 담당자 확인</td><td>안전보건규칙 제304조 등 적용범위·예외 확인 필요</td></tr>
+<tr><td><b>근골격·수작업</b></td><td>내화물 보수·축로, 샘플 채취, 코일 결속·포장, 밸브·호스 취급</td><td>중량, 들기 빈도·시간, 자세(IMU/영상), 반복동작, 자각증상</td><td>작업별 REBA/RULA 등 인체공학 평가점수가 사업장 관리기준 초과, 또는 부담작업 평가 한계 초과</td><td>보조장치·2인 취급, 작업높이·동선 개선, 작업순환·재평가</td><td>근골격계 부담작업 유해요인조사 및 작업별 인간공학 평가</td></tr>
+</tbody></table></div>
+<p class="small">질식·전기 수치는 적용 법령과 예외 조항을 실제 작업 유형별로 대조해야 합니다. 이 표는 자동 작업중지 로직이 아니라 경보 설계 초안입니다.</p></section>
+<section id="ontology" class="panel">
+<h2>온톨로지 지식 그래프</h2>
+<p class="sub">Hugging Face 원천 데이터에서 출발해 Persona 유형, 산재 유형, 산업현장 위험으로 이어지는 4단계 지식 흐름입니다. 노드를 선택하면 분류 기준과 연결 근거를 확인할 수 있습니다.</p>
+<div class="ontology-legend"><span><i class="legend-dot" style="background:#dceafe"></i>원천 데이터·분류</span><span><i class="legend-dot" style="background:#e5f5ec"></i>검토 관점</span><span><i class="legend-dot" style="background:#fff0d8"></i>사고 유형</span><span><i class="legend-dot" style="background:#fce5e5"></i>현장 위험</span><span>실선: 데이터·분류 관계</span><span>점선: 검증이 필요한 추론 관계</span></div>
+<div class="ontology-wrap">
+<svg class="ontology-svg" viewBox="0 0 1120 570" role="img" aria-label="Hugging Face 데이터, Persona, 산재 유형, 산업현장 위험으로 연결되는 온톨로지 그래프">
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#8090a5"/></marker></defs>
+<!-- Main directional edges -->
+<path class="edge" d="M245 145 L300 145"/><text class="edge-label" x="272" y="128" text-anchor="middle">분류</text>
+<path class="edge dashed" d="M500 145 L555 145"/><text class="edge-label" x="527" y="128" text-anchor="middle">검토 관점</text>
+<path class="edge dashed" d="M755 145 L810 145"/><text class="edge-label" x="782" y="128" text-anchor="middle">현장 연계</text>
+<!-- lower evidence branches -->
+<path class="edge" d="M145 190 L145 270"/><text class="edge-label" x="155" y="235">필드·속성</text>
+<path class="edge" d="M400 190 L400 270"/><text class="edge-label" x="412" y="235">역할 기준</text>
+<path class="edge" d="M655 190 L655 270"/><text class="edge-label" x="667" y="235">사고 키워드</text>
+<path class="edge dashed" d="M910 190 L910 270"/><text class="edge-label" x="922" y="235">위험 경로</text>
+<!-- cross-links to risk mechanisms -->
+<path class="edge dashed" d="M655 345 C655 410 760 410 810 410"/><text class="edge-label" x="728" y="397">위험 시나리오 후보</text>
+<path class="edge" d="M910 345 L910 410"/><text class="edge-label" x="922" y="382">관측·통제</text>
+<!-- Main nodes -->
+<g class="graph-node" data-node="hf"><rect class="node selected" x="35" y="95" width="210" height="95" rx="13" fill="#dceafe" stroke="#6b94d2"/><text class="node-title" x="140" y="126" text-anchor="middle">① Hugging Face</text><text class="node-sub" x="140" y="149" text-anchor="middle">Nemotron Persona 원천</text><text class="node-sub" x="140" y="168" text-anchor="middle">occupation · skills · persona</text></g>
+<g class="graph-node" data-node="persona"><rect class="node" x="300" y="95" width="200" height="95" rx="13" fill="#e5f5ec" stroke="#65a887"/><text class="node-title" x="400" y="126" text-anchor="middle">② Persona 유형</text><text class="node-sub" x="400" y="149" text-anchor="middle">8개 기능적 검토 역할</text><text class="node-sub" x="400" y="168" text-anchor="middle">전문성·직무 근거</text></g>
+<g class="graph-node" data-node="accident"><rect class="node" x="555" y="95" width="200" height="95" rx="13" fill="#fff0d8" stroke="#d5a34d"/><text class="node-title" x="655" y="126" text-anchor="middle">③ 산재 유형</text><text class="node-sub" x="655" y="149" text-anchor="middle">끼임 · 추락 · 충돌 · 화재</text><text class="node-sub" x="655" y="168" text-anchor="middle">질식 · 감전 · 근골격</text></g>
+<g class="graph-node" data-node="risk"><rect class="node" x="810" y="95" width="275" height="95" rx="13" fill="#fce5e5" stroke="#d28a8a"/><text class="node-title" x="947" y="126" text-anchor="middle">④ 산업현장 Risk</text><text class="node-sub" x="947" y="149" text-anchor="middle">설비 건전성 + 작업자 안전</text><text class="node-sub" x="947" y="168" text-anchor="middle">공정·설비·작업 조건</text></g>
+<!-- detail cards -->
+<g class="graph-node" data-node="hf-fields"><rect class="node" x="35" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#a9bfdc"/><text class="node-title" x="145" y="298" text-anchor="middle">원천 필드</text><text class="node-sub" x="145" y="321" text-anchor="middle">직업 · 전문성 · 기술 · 경력</text></g>
+<g class="graph-node" data-node="persona-roles"><rect class="node" x="290" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#9bc7ae"/><text class="node-title" x="400" y="298" text-anchor="middle">역할 분류 기준</text><text class="node-sub" x="400" y="321" text-anchor="middle">키워드 · 필드 가중치 · 근거</text></g>
+<g class="graph-node" data-node="accident-tags"><rect class="node" x="545" y="270" width="220" height="75" rx="10" fill="#fff" stroke="#d8b978"/><text class="node-title" x="655" y="298" text-anchor="middle">사고 포커스 태그</text><text class="node-sub" x="655" y="321" text-anchor="middle">사고 제목 · 원인 · 예방대책</text></g>
+<g class="graph-node" data-node="risk-path"><rect class="node" x="810" y="270" width="275" height="75" rx="10" fill="#fff" stroke="#d9aaaa"/><text class="node-title" x="947" y="298" text-anchor="middle">현장 위험 경로</text><text class="node-sub" x="947" y="321" text-anchor="middle">인자 → 상태 → 메커니즘 → 손상</text></g>
+<!-- lower outcome nodes -->
+<g class="graph-node" data-node="scenario"><rect class="node" x="545" y="410" width="220" height="85" rx="10" fill="#fff8eb" stroke="#d8b978"/><text class="node-title" x="655" y="440" text-anchor="middle">위험 시나리오</text><text class="node-sub" x="655" y="463" text-anchor="middle">사고유형 × 작업·설비 조건</text><text class="node-sub" x="655" y="480" text-anchor="middle">조건부 연결 가설</text></g>
+<g class="graph-node" data-node="monitor"><rect class="node" x="810" y="410" width="275" height="85" rx="10" fill="#f1f5fb" stroke="#9aabc2"/><text class="node-title" x="947" y="440" text-anchor="middle">감지 신호 · 통제조치</text><text class="node-sub" x="947" y="463" text-anchor="middle">센서·작업허가·LOTO·검사</text><text class="node-sub" x="947" y="480" text-anchor="middle">임계치 · 경보 · 관리자 확인</text></g>
+<text x="35" y="545" font-size="12" fill="#637083">노드를 클릭하면 상세 설명과 관계의 근거·검증 수준이 아래에 표시됩니다.</text>
+</svg></div>
+<div class="ontology-detail" id="ontologyDetail"><h3>① Hugging Face 원천 데이터</h3><p>Nemotron-Personas-Korea의 직무·전문성 관련 필드를 분류 입력으로 사용합니다. 실제 스키마 버전과 누락 필드를 확인한 뒤 사용해야 합니다.</p></div>
+<h3 style="margin-top:20px">엣지(관계) 정의</h3>
+<table class="ontology-edge-table"><thead><tr><th>출발 노드</th><th>관계(Edge)</th><th>도착 노드</th><th>관계 의미</th><th>근거 수준</th></tr></thead><tbody>
+<tr><td>Hugging Face</td><td>HAS_FIELD / DESCRIBES</td><td>Persona 유형</td><td>직무·전문성 필드를 읽어 역할 점수를 계산</td><td>데이터 필드 + 규칙</td></tr>
+<tr><td>Persona 유형</td><td>REVIEWS_THROUGH</td><td>산재 유형</td><td>역할별 전문 관점으로 사고 유형을 검토</td><td>설계 관계, 사고 예측 인과 아님</td></tr>
+<tr><td>산재 유형</td><td>CAN_OCCUR_IN / ASSOCIATED_WITH</td><td>산업현장 Risk</td><td>사고 유형이 발생할 수 있는 설비·작업 조건을 연결</td><td>KOSHA 사례 + 현장 검토 필요</td></tr>
+<tr><td>산업현장 Risk</td><td>INDICATED_BY</td><td>감지 신호</td><td>위험 경로를 관측할 수 있는 계측·점검 후보</td><td>현장 데이터로 검증 필요</td></tr>
+<tr><td>산업현장 Risk</td><td>MITIGATED_BY</td><td>통제조치</td><td>위험을 낮추는 작업·설비 통제</td><td>절차·기준 검토 필요</td></tr>
+</tbody></table>
+<p class="small">주의: Persona → 산재 유형 → 산업현장 Risk의 엣지는 곧바로 인과관계나 사고확률을 뜻하지 않습니다. Persona는 분석 관점이고, 산재-설비 연결은 실제 공정·작업 조건이 확인될 때만 유효한 시나리오로 취급합니다. 설비 손상 위험과 인명 안전 위험도 별도 평가합니다.</p>
 </section>
-<section class="panel">
- <h2>02. Persona를 8개로 구분한 이유</h2>
- <p class="sub">사람의 성격이나 사고 발생 가능성이 아니라, 제조현장의 위험을 서로 다른 전문 업무 관점에서 검토하기 위한 기능적 역할 분류입니다.</p>
- <div class="note">분류 방법: 직무·전문성 관련 7개 필드에서 아래 키워드가 발견되면 해당 역할에 배정합니다. 한 레코드가 여러 역할에 동시에 해당할 수 있습니다. 따라서 8개 분류는 상호 배타적인 직업 통계가 아닙니다.</div>
- <div class="field"><b>필드 가중치(분류 점수 계산용)</b><br>occupation 4 · professional_persona 4 · skills_and_expertise_list 3 · skills_and_expertise 2 · detailed_persona 2 · career_goals_and_ambitions 1 · persona 1</div>
- <div id="personaCards" class="grid" style="margin-top:14px"><div class="empty">Persona API 조회 후 분류 결과가 표시됩니다.</div></div>
- <h3 style="margin-top:22px">왜 8개인가? — 분류 설계 논리</h3>
- <p>8개는 AI가 데이터에서 자동 발견한 자연적인 군집 수가 아닙니다. 제조현장 안전검토에서 서로 다른 원인·통제 지점을 놓치지 않도록 정한 <b>업무 기능 기반의 설계 분류</b>입니다.</p>
- <div class="grid">
-  <article class="card"><h3>① 공정·원료·재료</h3><p>투입물의 조성·물성·반응성과 공정조건에서 위험이 시작되는지 확인합니다.</p><span class="tag">공정·물질 원인</span></article>
-  <article class="card"><h3>② 설비·기계·정비</h3><p>회전체·구동부·압력설비의 물리적 위험, 고장 및 정비 중 에너지 격리를 확인합니다.</p><span class="tag">기계적 위험</span></article>
-  <article class="card"><h3>③ 전기·계장·자동화</h3><p>전기 에너지, 센서, 인터록, 제어 로직 및 자동 재기동 위험을 확인합니다.</p><span class="tag">전기·제어 위험</span></article>
-  <article class="card"><h3>④ 생산·운전</h3><p>운전모드, 기동·정지, 생산부하, 작업절차와 비정상 운전 조건을 확인합니다.</p><span class="tag">운전·작업 조건</span></article>
-  <article class="card"><h3>⑤ 안전·환경·보건</h3><p>위험성평가, 작업허가, 보호조치, 유해인자 및 비상대응의 적정성을 확인합니다.</p><span class="tag">위험 통제·보건</span></article>
-  <article class="card"><h3>⑥ 물류·운송·인양</h3><p>원료·제품·중량물의 이동, 차량 동선, 하역 및 인양 중 충돌·낙하 위험을 확인합니다.</p><span class="tag">이동·하역 위험</span></article>
-  <article class="card"><h3>⑦ 품질·검사·분석</h3><p>검사·측정·시료채취 과정과 결함·이상징후를 조기에 발견하는 역할을 반영합니다.</p><span class="tag">검사·이상 검출</span></article>
-  <article class="card"><h3>⑧ 관리·감독·인력운영</h3><p>작업 간섭, 교대, 도급, 인력배치, 교육 및 의사소통 같은 조직적 요인을 확인합니다.</p><span class="tag">조직·관리 통제</span></article>
- </div>
- <div class="note" style="margin-top:12px"><b>8개 분류의 의미:</b> 공정·설비·전기·운전은 위험이 발생하는 기술적 영역을, 안전·물류·품질은 예방·이동·검증 기능을, 관리·감독은 조직과 작업 조정 기능을 담당합니다. 따라서 현장 위험을 기술적 원인, 작업 실행, 보호·검증, 조직적 통제의 관점에서 교차 검토할 수 있습니다. 8개라는 숫자 자체가 통계적으로 최적임을 입증한 것은 아니며, 향후 실제 직무 표본과 전문가 검토를 통해 중복·누락을 평가해야 합니다.</div>
+<section id="actualdata" class="panel">
+<h2>실제 데이터 탭 — Hugging Face & KOSHA API</h2>
+<p class="sub">API에서 원천 레코드를 직접 조회합니다. 조회된 표본·건수와 규칙 기반 분류 결과를 구분해 표시합니다.</p>
+<div id="liveApiStatus" class="api-status">Hugging Face와 KOSHA API를 조회하고 있습니다…</div>
+<div class="api-kpis">
+<div class="card"><div class="small">Hugging Face 조회 레코드</div><div class="api-count" id="liveHfCount">—</div><div class="small" id="liveHfMeta">조회 전</div></div>
+<div class="card"><div class="small">KOSHA 조회 레코드</div><div class="api-count" id="liveKoshaCount">—</div><div class="small" id="liveKoshaMeta">조회 전</div></div>
+</div>
+<div class="row"><div class="card"><h3>Hugging Face 원천 데이터</h3><p>Dataset: nvidia/Nemotron-Personas-Korea</p><p class="small">직무 분류 입력: occupation, professional_persona, skills_and_expertise_list, skills_and_expertise, detailed_persona, career_goals_and_ambitions, persona</p><div id="liveHfSamples"></div></div>
+<div class="card"><h3>KOSHA 산재 원천 데이터</h3><p>Render API: /api/kosha/accidents</p><p class="small">사고 제목·개요·원인·예방대책 등 실제 반환 문자열 필드에서 유형 키워드를 다중 태깅합니다.</p><div id="liveKoshaSamples"></div></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn primary" id="reloadLiveApi">API 다시 조회</button></div>
+<h3>실제 데이터 기반 Persona 8개 분류 결과</h3><div id="livePersonaCards" class="api-grid"><div class="result">API 조회 후 표시됩니다.</div></div>
+<h3 style="margin-top:22px">실제 KOSHA 사고 데이터 기반 7개 유형</h3><div id="liveAccidentCards" class="api-grid"><div class="result">API 조회 후 표시됩니다.</div></div>
+<h3 style="margin-top:22px">분류된 실제 사고 원문 예시</h3><div id="liveClassifiedCases"></div>
+<p class="small">주의: Hugging Face는 default/train 표본 최대 100행이며 전체 데이터셋 분석이 아닙니다. Persona·사고 분류는 키워드·필드 가중치 기반 규칙 분류이며 ML 학습모델 또는 KOSHA 공식 사고통계 분류가 아닙니다.</p>
 </section>
-<section class="panel">
- <h2>03. KOSHA 산업재해 원천 데이터</h2>
- <p class="sub">Render API · 실제 사고사례 레코드 및 원문 필드</p>
- <div class="grid">
-  <div class="card"><div class="small">조회한 산재 레코드</div><div class="count" id="koshaCount">—</div><div class="small" id="koshaMeta">API 조회 전</div></div>
-  <div class="card"><div class="small">분류 대상 원문</div><p>API에서 반환한 사고 레코드의 모든 문자열 필드를 대상으로 제목·발생 개요·원인·예방대책 등의 표현을 탐색합니다.</p></div>
- </div>
- <div id="koshaSamples" style="margin-top:12px"></div>
-</section>
-<section class="panel">
- <h2>04. 산업재해 유형을 이렇게 만든 이유</h2>
- <p class="sub">사고 원문을 제조현장 위험 검토에 활용할 수 있도록 7개 분석용 유형으로 묶었습니다.</p>
- <div class="note">주의: 아래 7개 유형은 이 프로젝트에서 정의한 키워드 기반 분석 분류입니다. KOSHA의 공식 재해형태 코드·법정 통계 분류를 대체하지 않습니다. 하나의 사고에 복수 유형이 붙을 수 있으며, 키워드가 발견됐다는 사실만으로 사고의 근본원인을 확정하지 않습니다.</div>
- <div id="accidentCards" class="grid" style="margin-top:14px"><div class="empty">KOSHA API 조회 후 분류 결과가 표시됩니다.</div></div>
- <h3 style="margin-top:20px">분류된 실제 사고사례</h3>
- <div id="classifiedCases"><div class="empty">사고 원문을 분류하고 있습니다.</div></div>
-</section>
-<section class="panel">
- <h2>05. 제철소 현장 적용 예시 — 7개 산재유형별 Threshold 알람</h2>
- <p class="sub">적용 범위: 원료 하역·이송 → 코크스/소결 → 고로 → 제강·연주 → 압연·제품 출하가 있는 일관제철소를 가정합니다.</p>
- <div class="note"><b>해석 기준:</b> Threshold는 반드시 숫자일 필요가 없습니다. 방호문 열림, LOTO 미확인, 작업자-차량 접근 등은 상태 기반(Boolean) 임계값으로 경보해야 합니다. 법령에 수치가 있는 항목만 법정 기준으로 표기하고, 나머지는 설비별 위험성평가·제조사 기준·사업장 표준으로 설정해야 합니다. 아래 표는 설계 예시이며 현재 실제 센서에 연결된 경보가 아닙니다.</div>
- <div style="overflow-x:auto;margin-top:14px"><table class="alarm-table">
- <thead><tr><th>산재 유형</th><th>제철소 위험 장소·상황</th><th>측정 신호 / 데이터</th><th>Threshold 알람 조건 예시</th><th>알람·권고 조치</th><th>기준 성격</th></tr></thead>
- <tbody>
- <tr><td><b>끼임·말림·협착</b></td><td>코크스·소결·원료 컨베이어, 압연 롤, 코일 이송장치 정비</td><td>방호문·인터록 상태, 설비 운전속도, LOTO 상태, 작업허가·작업자 위치</td><td><b>방호문 열림 AND 위험부 구동 중</b> 또는 <b>정비작업 허가 중 에너지 격리 미확인</b>이면 즉시 경보. 속도·토크 이상은 설비별 정상범위 이탈로 별도 경보.</td><td>구동 정지·재기동 금지, 현장 확인, 에너지 차단 및 잠금표지 확인</td><td>법정 안전조치 + 설비 인터록 설계기준. 정비 시 운전정지·기동방지 조치: 안전보건규칙 제92조</td></tr>
- <tr><td><b>추락·전도</b></td><td>고로·코크스 오븐 상부, 집진기·탱크 점검, 크레인 거더·플랫폼, 고소 정비</td><td>작업허가, 작업자 위치, 난간·개구부 덮개 상태, 안전대 체결·추락감지, 바닥 미끄럼·수분</td><td><b>고소작업 구역 진입 AND 난간/개구부 방호 미확인</b> 또는 <b>안전대 체결 확인이 필요한 작업에서 미체결</b>이면 경보. 추락감지 시 즉시 구조 알람.</td><td>작업중지·출입통제, 추락방호 상태 확인, 구조계획 실행</td><td>작업높이·장소별 법정 방호조치 및 사업장 고소작업 기준. 단일 공통 센서 숫자 기준 없음</td></tr>
- <tr><td><b>충돌·낙하물</b></td><td>스크랩 야드, 용선·용강 운반, 천장크레인, 지게차·운반차량 교차구역</td><td>UWB/GPS 위치, 차량 속도, 크레인 하중·권상 상태, 출입통제 구역, 작업자 태그</td><td><b>작업자-차량/중량물의 예상 충돌시간이 제동·회피시간 이하</b>이면 경보. 크레인 실제 하중이 정격하중·하중곡선 한계에 접근하거나 초과하면 단계 경보/운전제한.</td><td>차량 감속·정지, 크레인 동작 제한, 위험구역 대피 및 신호수 확인</td><td>크레인 제조사 하중곡선·정격하중 및 사업장 동선·제동거리 검증값. 위치 임계거리는 현장별 산정</td></tr>
- <tr><td><b>화재·폭발·화상</b></td><td>코크스 오븐 가스, 고로·전로 가스, 가스 배관·밸브실, 용선·용강 및 출강구역</td><td>가연성가스 검지(%LEL), CO·H₂ 농도, 가스압력·유량, 화염감지, 열화상 온도</td><td><b>가스 검지기 설정 경보점 초과</b>, 가스압력 급락·유량 불균형, 화염 비정상 또는 설비별 허용온도 초과 시 경보. 가스별 검지기 설정값은 위험성평가·방폭설계·제조사 기준에 등록.</td><td>가스 차단·환기·점화원 통제, 출입통제, 비상대응 절차 가동</td><td>안전보건규칙 제232조는 가스 검지·경보장치 설치를 요구. 보편적인 단일 %LEL 수치는 여기서 임의 지정하지 않음</td></tr>
- <tr><td><b>질식·중독·유해물질</b></td><td>가스 배관·집진기·탱크·피트 내부, 코크스/고로 가스 누출 우려 구역, 밀폐공간 정비</td><td>O₂, CO, H₂S, CO₂, 작업자 휴대용 복합가스측정기, 환기상태</td><td><b>밀폐공간 적정공기 범위 이탈</b>: O₂ 18% 미만 또는 23.5% 이상, CO 30 ppm 이상, H₂S 10 ppm 이상, CO₂ 1.5% 이상이면 출입·작업 제한 경보.</td><td>즉시 대피·출입금지, 환기, 측정 재확인, 구조 시 보호장비 없는 진입 금지</td><td><b>법정 수치</b>: 안전보건규칙 제618조의 적정공기 정의. 밀폐공간 작업 프로그램·사전 확인은 제619조</td></tr>
- <tr><td><b>감전·전기·에너지</b></td><td>압연 모터·고압 수배전반, 전기로 전원, 이동형 전동공구, 습윤·철골 작업구역</td><td>전압 유무, 누설전류, 절연감시장치, 누전차단기 트립·시험상태, LOTO·접지상태</td><td><b>정비 허가 중 전압 검출 또는 LOTO 불일치</b>면 즉시 경보. 적용 대상 누전차단기는 정격감도전류 ≤30mA 및 작동시간 ≤0.03초(법령상 예외 조건 별도)인지 점검.</td><td>전원 차단·접근 금지, 검전·방전·접지, 전기 담당자 확인</td><td><b>법정 수치</b>: 안전보건규칙 제304조 및 누전차단기 요건. 작업별 적용범위와 예외 확인 필요</td></tr>
- <tr><td><b>근골격·수작업</b></td><td>내화물 보수·축로, 샘플 채취, 코일 결속·포장, 수작업 밸브·호스 취급</td><td>중량물 무게, 들기 빈도·작업시간, 허리·어깨 자세(IMU/영상), 반복동작, 작업자 자각 증상</td><td><b>작업별 인체공학 평가점수(REBA/RULA 등)가 사업장 관리기준을 초과</b>하거나 중량·빈도·비틀림 자세가 위험성평가 한계를 초과하면 개선 알람. 점수 하나만으로 법 위반 판정하지 않음.</td><td>작업중단·2인 취급/보조장치 적용, 작업높이·동선 개선, 작업순환 및 유해요인 재평가</td><td>근골격계 부담작업 유해요인조사 및 인간공학 평가. 점수 경계는 평가도구·작업별 기준에 따라 설정</td></tr>
- </tbody></table></div>
- <div class="note" style="margin-top:12px"><b>운영 설계상 핵심:</b> 사고유형별로 센서 하나를 붙이는 방식은 부정확합니다. 예를 들어 끼임은 설비 운전상태 + 방호문 + 정비허가 + LOTO의 조합으로 판단해야 합니다. 반면 질식은 가스농도라는 직접 계측값이 핵심입니다. 즉, 7개 유형마다 센서 기반, 상태 기반, 작업허가 기반, 인체공학 평가 기반의 서로 다른 threshold engine이 필요합니다.</div>
-</section>
+<section id="method" class="panel"><h2>검증·출처·제한</h2><h3>필수 검증</h3><ul><li>Persona 역할: 산업안전·생산·정비 전문가 라벨 대비 Macro-F1, Precision, Recall</li><li>사고 포커스: KOSHA 사례 전문가 다중라벨 대비 태깅 정확도·누락률</li><li>설비 위험: 정상운전·비사고 데이터 포함 PR-AUC, Recall, 오경보율, 치명위험 누락률</li><li>운영 효용: 야간 알림 수, 중복경보율, 확인시간, 조치 리드타임</li></ul><h3>데이터·코드 출처</h3><ul><li><a href="https://huggingface.co/datasets/nvidia/Nemotron-Personas-Korea" target="_blank" rel="noopener">NVIDIA Nemotron-Personas-Korea</a></li><li><a href="https://catalog.ngc.nvidia.com/orgs/nvidia/nemotron-personas/resources/nemotron-personas-dataset-ko_kr/-" target="_blank" rel="noopener">NVIDIA Nemotron-Personas-Korea-Extended</a></li><li><a href="https://www.data.go.kr/data/15163146/fileData.do" target="_blank" rel="noopener">KOSHA 제조업 사고사례</a></li><li><a href="https://github.com/ahky900-art/refractory/blob/main/ontology-enhanced.js" target="_blank" rel="noopener">Refractory 설비 온톨로지</a></li><li><a href="https://github.com/ahky900-art/refractory/blob/main/maintenance-planning.js" target="_blank" rel="noopener">Refractory 정비 프로파일</a></li><li><a href="https://github.com/ahky900-art/persona-manufacturing-ai-agent" target="_blank" rel="noopener">본 프로젝트 GitHub 저장소</a></li></ul><div class="notice">이 페이지는 현장 안전관리 시스템이 아닙니다. 실시간 감지, 자동 작업중지, 법정 위험성평가 기능을 수행하지 않습니다. 실제 운영 전 현장 전문가 검증, 데이터 품질검토, 접근통제 및 감사로그가 필요합니다.</div></section>
+<footer class="small" style="padding:18px 2px">Persona Manufacturing AI Safety Agent · GitHub Pages static dashboard · Research prototype</footer>
 </main>
 <script>
+
+const ontologyDetails={
+ hf:["① Hugging Face 원천 데이터","Nemotron-Personas-Korea의 occupation, professional_persona, skills_and_expertise, persona 등 직무 관련 필드를 읽습니다. 기본·Extended 스키마를 구분하고 실제 파일의 필드 존재 여부를 먼저 검증합니다.","관계: HAS_FIELD / DESCRIBES · 근거: 원천 데이터 스키마. OCEAN·MBTI·건강·인구통계는 작업자 위험점수 산출에 사용하지 않습니다."],
+ "hf-fields":["원천 필드","occupation과 professional_persona는 각 4점, skills_and_expertise_list는 3점, 서술형 기술·상세 페르소나는 2점, 경력목표·종합 persona는 1점으로 분류 근거를 구성합니다.","관계: EXTRACTS_FIELD · 근거: 프로젝트의 초기 규칙. 필드 누락·언어·표현 차이에 대한 검증이 필요합니다."],
+ persona:["② Persona 유형","원천 직무 서술을 공정·원료·재료, 설비·정비, 전기·계장, 생산·운전, 안전·환경, 물류·인양, 품질·검사, 관리·감독의 8개 기능적 역할로 다중 분류합니다.","관계: CLASSIFIED_AS · 근거: 필드 가중치와 키워드 규칙. 실제 사람의 MBTI 유형이나 사고 성향을 뜻하지 않습니다."],
+ "persona-roles":["역할 분류 기준","각 역할은 키워드 사전과 원천 필드 가중치로 점수화합니다. 매칭된 원문 필드·키워드를 보존해 분류 이유를 추적합니다.","관계: HAS_CLASSIFICATION_EVIDENCE · 근거: 규칙 기반. 전문가 라벨로 Macro-F1·재현율을 검증해야 합니다."],
+ accident:["③ 산재 유형","KOSHA 사고 제목·개요·원인·예방대책에서 끼임, 추락, 충돌, 화재·폭발, 질식·중독, 감전, 근골격 위험을 다중 태깅합니다.","관계: FOCUSES_ON / REVIEWS_THROUGH · 근거: 사고 서술과 역할별 검토 질문. Persona가 해당 사고를 더 잘 예측한다는 뜻은 아닙니다."],
+ "accident-tags":["사고 포커스 태그","사고 원문에서 위험 키워드를 추출하고 원인·예방대책을 함께 연결합니다. 한 사례에 여러 위험유형이 붙을 수 있습니다.","관계: TAGGED_AS · 근거: 규칙 기반 태깅. 원문 문맥과 전문가 라벨 검토가 필요합니다."],
+ risk:["④ 산업현장 Risk","Refractory 설비 프로파일과 제조업 사고사례를 연결합니다. 설비 건전성(침식·용손·균열·박락)과 작업자 안전(끼임·추락·화상·질식 등)을 분리해 관리합니다.","관계: CAN_OCCUR_IN / ASSOCIATED_WITH · 근거: 공정·작업 조건이 확인된 경우에만 적용되는 시나리오 가설입니다."],
+ "risk-path":["현장 위험 경로","공정·원료·운전·정비 인자 → 상태 변화 → 물리·화학 메커니즘 → 손상·위험 → 취약 부위의 순서로 표현합니다.","관계: INFLUENCES / CAUSES_UNDER_CONDITION · 근거: refractory 저장소의 모델·프로파일 및 공학적 가설. 운전 데이터와 검사 결과로 검증해야 합니다."],
+ scenario:["위험 시나리오","사고 유형과 실제 작업·설비 상태가 함께 성립할 때 위험 시나리오로 연결합니다. 예: 회전 롤러 이물 제거 + 운전 중 + LOTO 미확인 → 끼임 위험.","관계: REALIZED_UNDER_CONDITION · 근거: 조건부 시나리오. 단순히 설비 이름만 같다고 연결하지 않습니다."],
+ monitor:["감지 신호 · 통제조치","쉘 온도·진동·차압·잔여 두께·가스농도·작업자 위치·작업허가·LOTO 등 가용한 신호를 연결합니다. 핵심 통제 실패는 별도 하드 알림 후보입니다.","관계: INDICATED_BY / MITIGATED_BY / TRIGGERS_ALERT · 근거: 현장 센서·점검·절차 데이터 연결 후 검증해야 합니다. 현재 실시간 센서 연동은 없습니다."]
+};
+document.querySelectorAll(".graph-node").forEach(g=>g.addEventListener("click",()=>{document.querySelectorAll(".ontology-svg .node").forEach(n=>n.classList.remove("selected"));const rect=g.querySelector(".node");if(rect)rect.classList.add("selected");const d=ontologyDetails[g.dataset.node];if(d)document.getElementById("ontologyDetail").innerHTML="<h3>"+d[0]+"</h3><p>"+d[1]+"</p><p class='small'>"+d[2]+"</p>"}));
+const roles=[
+{id:"process_materials",name:"공정·원료·재료 분석",focus:"원료 성상·조성·반응성·열·물질수지",lens:"원료·공정 편차 → 이상상태·열화",kw:["공정","화학","재료","금속","야금","원료","광물","슬래그","회분","소재","열역학","반응","제련","소성","process","chemical","materials","metallurgy","raw material"],w:{"occupation":4,"professional_persona":4,"skills_and_expertise_list":3,"skills_and_expertise":2,"detailed_persona":2,"career_goals_and_ambitions":1,"persona":1}},
+{id:"equipment_maintenance",name:"설비·기계·정비",focus:"회전·구동부·압력·유체설비·진동·정비",lens:"설비 고장·방호 실패·에너지 격리 미흡",kw:["기계","설비","정비","보전","회전","펌프","밸브","베어링","기어","용접","배관","압력용기","크레인","지게차","maintenance","mechanical","equipment","rotating","pump","valve"]},
+{id:"electrical_control",name:"전기·계장·자동화",focus:"전기 에너지·PLC·인터록·센서·계측 신뢰도",lens:"인터록 우회·센서 오류·감전·아크",kw:["전기","계장","자동화","제어","PLC","센서","계측","인터록","전력","모터","instrument","electrical","automation","control","sensor"]},
+{id:"production_operations",name:"생산·운전",focus:"운전조건·생산량·부하·기동정지·작업순서",lens:"운전 편차·절차 이탈·비정상 운전",kw:["생산","운전","조업","오퍼레이터","운전원","용해","소각","보일러","킬른","가열로","production","operator","operation","furnace","kiln"]},
+{id:"safety_environment",name:"안전·환경·보건",focus:"위험성평가·작업허가·LOTO·밀폐공간·화학물질",lens:"추락·끼임·질식·화재·폭발·유해물질",kw:["안전","산업안전","보건","환경","위험성평가","작업허가","LOTO","밀폐공간","소방","safety","environment","health","risk assessment"]},
+{id:"logistics_lifting",name:"물류·운송·인양",focus:"지게차·크레인·운반·하역·적재·중량물",lens:"충돌·협착·낙하물·전도",kw:["물류","운송","운반","하역","인양","크레인","호이스트","지게차","적재","창고","logistics","lifting","forklift","crane","transport"]},
+{id:"quality_inspection",name:"품질·검사·분석",focus:"검사·시험·측정·NDT·품질편차",lens:"결함 조기발견 실패·검사 누락·측정오류",kw:["품질","검사","시험","분석","측정","비파괴","NDT","품질관리","실험실","laboratory","quality","inspection","testing"]},
+{id:"supervision_management",name:"관리·감독·인력운영",focus:"작업조정·인력·교대·동시작업·도급·구역통제",lens:"감독 공백·작업 간섭·의사소통·허가 누락",kw:["관리자","감독","팀장","공장장","생산관리","현장관리","공사관리","프로젝트관리","인사","교육","supervisor","manager","management","project"]}
+];
+const weights={occupation:4,professional_persona:4,skills_and_expertise_list:3,skills_and_expertise:2,detailed_persona:2,career_goals_and_ambitions:1,persona:1};
+const focusRules={
+"끼임·말림·협착":["끼임","말림","협착","회전부","롤러","롤","기어","컨베이어","끼어","LOTO"],
+"추락·전도":["추락","떨어짐","전도","넘어짐","개구부","사다리","비계","고소"],
+"충돌·낙하물":["충돌","부딪힘","맞음","낙하","비래","크레인","지게차","인양","운반"],
+"화재·폭발·화상":["화재","폭발","화상","화염","용융","고온","불티","가스누출","점화"],
+"질식·중독·유해물질":["질식","산소결핍","중독","유해가스","밀폐공간","황화수소","일산화탄소","분진","누출"],
+"감전·전기·에너지":["감전","전기","누전","아크","전원","정전","차단기","에너지 차단"],
+"근골격·수작업":["근골격","중량물","근육","요통","반복작업","수작업","인력운반"]};
+const equipment={
+"래들":[["슬래그 FeOx·SiO₂ 변화","슬래그 점도·젖음성·저융점 반응상 변화","MgO 용해·입계 침투·반응층 박리","슬래그 라인 용손·침투층 확대","슬래그 라인","슬래그 XRF, 잔여 두께, 벽면·쉘 온도"],["교반 가스 유량·시간 증가","벽면 전단응력·물질전달 증가","침식·용해 경계층 제거","슬래그 라인 국부 침식","슬래그 라인·용강 접촉 측벽","가스 유량·압력, 교반 시간, 국부 두께"],["출강온도·고온 유지시간 증가","계면 반응속도 증가","화학적 용해·침투 촉진","용손·잔존 두께 감소","용강 접촉 측벽","온도 이력, 유지시간, 잔여 두께"],["급격한 냉각·재가열 반복","내외부 온도구배 증가","열피로·열충격","균열·스폴링·벽돌 탈락","측벽·바닥","온도 램프, 열화상, 균열검사"]],
+"로터리 킬른":[["원료 Fe·알칼리·염류 증가","저융점 액상·점착성 용융물","액상 침투·용해·클링커 부착","벽돌 침식·링 형성 악화","소성대·전이대","원료 XRF·회분 융점, 온도, 링·코팅, 두께"],["처리량·가스 유속·분진 증가","입자 충돌·벽면 전단 증가","마모·침식","입구·예열대 라이닝 두께 감소","입구·예열대","처리량, 유속·차압, 분진 입도, 두께"],["소성온도·고온 체류시간 증가","클링커 액상·계면 반응 증가","열화학적 용손·침투","소성대 용손·코팅 불안정","소성대","온도·체류시간, 쉘 스캐너, 코팅·링, 두께"],["기동정지·승강온 변화","열팽창 차이 누적","열피로·코팅 박리","전이대 균열·스폴링","상·하부 전이대","기동정지 횟수, 승강온 속도, 쉘 온도"]],
+"RFCC 재생기":[["촉매 순환량·입자 속도 증가","고체 충돌 운동량·벽면 전단 증가","고속 입자 침식","캐스터블 두께 감소","사이클론·전이 콘·덴스 베드","촉매량·입도, 차압, 촉매 손실, 라이닝 두께"],["후연소·국부 O₂·온도 증가","국부 과열·산화 분위기 강화","소결·산화·열화학 균열","핫스팟·균열·박락","희박상·사이클론 상부","O₂·CO, 다점 온도, 쉘 온도, 후연소 위치"],["촉매 입도·유동 편류","특정 벽면 충돌 집중","국부 침식·마모","타깃벽·접선부 편중 마모","사이클론 접선부·타깃벽","차압, 촉매 입도·손실, 온도 비대칭"]],
+"소각로":[["폐기물 Na/K/Cl/S·회분 증가","알칼리염·황산염·염화물 침착·저융점 액상","용융염 부식·기공 침투","화학적 용손·표면 박리","연소실·2차 연소실","폐기물·비산회 XRF, 온도, 표면·두께"],["수분·발열량·투입량 변동","연소온도·열유속 반복 변동","열피로·열충격","균열·스폴링·캐스터블 탈락","연소실","수분·발열량, 투입량, 온도 램프, 검사"],["회분·클링커 유속·충돌 증가","벽면 충돌·마찰 증가","기계적 침식·마모","측벽·하부·배출부 마모","회분 접촉부","회분량·입도, 차압·막힘, 국부 두께"],["캐스터블 수분·두께·건조속도","내부 증기압·온도구배 증가","폭렬성 스폴링·건조균열","초기 운전 중 대면적 박락","연소실","수분·두께, 양생·dry-out 로그, 초기검사"]],
+"용융로형 소각로":[["슬래그 SiO₂·FeOx·알칼리 변화","액상선·점도·젖음성 변화","용해·확산·침투","용융조 벽·바닥 용손","용융조","슬래그 XRF·염기도, 온도, 두께, 쉘 온도"],["용융온도·접촉시간 증가","계면 반응·용해속도 증가","화학적 부식·용융 침식","슬래그 라인 후퇴","슬래그 라인","용융온도, 조성, 접촉시간, 두께"],["출탕 유량·속도·노즐 편류","국부 전단·마찰·온도구배 증가","유동 침식·열기계 마모","출탕구 확대·노즐 손상","출탕구","출탕 유량·시간, 노즐 개구, 보수 이력"]],
+"화격자형 소각로":[["폐기물 Cl·Na/K·S·비산회 변화","염화물·황산염 침착·부식환경","용융염 부식·침투·산화","표면 부식·박리","화격자 상부·후연소실","비산회 XRF, 온도, 표면·두께"],["투입량·낙하·화격자 속도 증가","충돌 에너지·마찰 증가","충격·마모·침식","상부·하부 측벽 마모","화격자 상부·재 배출부","투입량, 낙하 이벤트, 화격자 속도, 두께"],["공기 분배·화염·온도 편차","국부 과열·온도구배","열피로·열충격·산화","균열·박락·핫스팟","측벽·천장·후연소실","1·2차 공기, 다점 온도, 열화상"],["SiC 결합계·산화·조인트 열화","산화·염 침투 경로 증가","산화·화학부식·조인트 침식","표면 열화·균열·탈락","화격자 상부·측벽","SiC 표면·조인트, 수증기·온도·염류"]],
+"가열로":[["버너 화염 길이·방향·공기비","국부 열유속 증가","국부 과열·열화학 열화","버너블록 균열·천장 핫스팟","버너 블록·가열대","버너별 부하·공기비, 화염방향, 노온, 열화상"],["강재 스케일 발생·낙하 증가","FeO 스케일 접촉·마찰 증가","용융 스케일 침투·노상 마모","노상·스키드 주변 침식","노상·스키드","강종·가열온도, 스케일량, 노상두께"],["장입·추출·재가열 반복","열사이클 누적","열피로·스폴링","천장·도어·버너 주변 박락","가열대·도어·전이부","기동정지, 승강온, 위치별 온도"]],
+"고로":[["슬래그 FeO·SiO₂·알칼리·용선온도","계면 반응 증가","용해·침투·열화학 부식","노상·출선구 잔여두께 감소","노상·출선구","슬래그 조성, 용선온도, 냉각수 열수지, 열전대"],["송풍·가스 유속·장입 하강 증가","벽면 충돌·전단 증가","마모·침식","샤프트·보시 국부 마모","벨리·샤프트","송풍량, 가스유속, 장입 입도·분배"],["출선 빈도·용선 유속 편류","출선구 유동·마찰 집중","기계적 침식·용손","출선구 확대·주변 손상","출선구","출선 횟수·시간, 개공길이, 머드건 사용량"],["휴풍·감풍·재가동 반복","온도구배·구조응력 변화","열충격·열피로","균열·박락·변형","노상·하부 샤프트","휴풍 이벤트, 냉각속도, 열전대"]],
+"2차 개질로":[["공정가스·스팀 조성·분압 변화","라이닝 화학분위기·열전달 변화","가스-고체 반응 가능성·휘발/재응축","표면 열화·균열·핫스팟","연소실·출구 전이부","가스·스팀 조성, 수증기 분압, 온도"],["버너 부하·화염 편향","국부 과열·열유속 편차","열화학 열화·열응력","버너타일·돔 균열/박락","버너·연소실","버너별 부하, 화염방향, 출구온도, 열화상"],["촉매 충전량·차압·가스 편류","지지부 하중·국부 유속 증가","기계응력·침식·핫스팟","촉매 지지 돔·전이부 손상","촉매 지지부","촉매 차압, 온도분포, 가스 분배"]],
+"Claus Thermal Reactor":[["H₂S/SO₂·공기비·황증기 변화","황계 분위기·국부 온도 변화","분위기 의존 열화·국부 과열","버너타일·Checker 열화","버너타일·주연소실·Checker","H₂S/SO₂, O₂·공기비, 온도, Checker 차압"],["버너 화염·연소 부하 편향","국부 열유속·온도구배 증가","열충격·열피로","타일 균열·박락","버너 타일·주연소실","버너별 부하, 화염, 다점 온도"],["Checker 차압·침착·막힘","가스 유동 편류·압력손실 증가","유동 편류·국부 열화","Checker 막힘·벽돌 손상","Checker brick·W.H.B. 전이부","차압, 개구율, 온도편차"]],
+"CFB 보일러":[["순환재 유량·속도·고형물 증가","입자 충돌·벽면 전단 증가","입자 침식","라이닝 마모·두께 감소","하부 노·사이클론","순환재 유량·입도, 차압, 두께"],["회분 Na/K/Cl/S·융점 변화","저융점 회분·부식성 침착","화학침투·고온부식","표면 열화·용손","수냉벽 전이부·사이클론","회분 XRF·융점, 온도, O₂·CO"],["베드온도·공기분배 편차","국부 과열·열구배","열응력·열충격","균열·핫스팟·박락","하부 노·사이클론","베드온도, 공기량, 다점 온도"],["앵커·스터드·캐스터블 수분·건조","지지력 저하·증기압 증가","박리·폭렬성 스폴링","대면적 라이닝 탈락","전이부·루프실·딥레그","앵커 검사, 수분·두께, dry-out 로그"]]};
+const safety=[
+["회전설비 정비·이물 제거","끼임·말림","설비 운전상태 불명, LOTO 미확인, 방호장치 해제","정지·에너지 격리, 잠금표찰, 잔류에너지 확인","정비 중 LOTO 미확인"],
+["크레인·호이스트 인양","낙하물·협착·충돌","인양물 하부 작업자, 슬링 손상, 신호수 부재","인양구역 통제, 정격·체결 확인, 신호수 통신","매달린 하중 아래 사람 감지"],
+["고소·개구부 작업","추락","난간·덮개 미설치, 발판 불량, 추락방호 미착용","덮개·난간, 발판 점검, 추락방호, 작업허가","방호 미확보 상태 작업자 접근"],
+["용융물·고온설비 주변","화상·용융물 접촉","용융물 누출·비산, 고온 표면, PPE 미확인","용융물 경로·대피구역, 차폐·냉각, 내열 PPE","용융물 누출 또는 비산"],
+["밀폐공간·덕트·호퍼","산소결핍·유해가스·매몰","가스측정 미실시, 환기 중단, 격리 미흡","산소·유해가스 측정, 환기·격리, 감시인·구조계획","가스측정 미확인 또는 가스 경보"],
+["지게차·로더 운행","충돌·끼임","보행자·차량 동선 중첩, 후진 사각, 유도자 부재","동선 분리, 속도·후진경보, 유도자, 운행점검","보행자-차량 위험구역 동시 점유"]];
+const $=id=>document.getElementById(id);
+
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));document.querySelectorAll("section.panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active")}));
+$("roleCards").innerHTML=roles.map(r=>'<div class="card"><h3>'+r.name+'</h3><p><b>집중 관점</b> '+r.focus+'</p><p><b>사고 검토 렌즈</b> '+r.lens+'</p><div>'+r.kw.slice(0,8).map(k=>'<span class="tag">'+k+'</span>').join("")+'</div></div>').join("");
+function classifyRole(){let t=$("personaText").value.toLowerCase(),scores=roles.map(r=>({r,s:r.kw.filter(k=>t.includes(k.toLowerCase())).length})).filter(x=>x.s).sort((a,b)=>b.s-a.s);$("personaResult").innerHTML=scores.length?scores.map(x=>'<div><b>'+x.r.name+'</b> · 키워드 '+x.s+'개 <div class="bar"><span style="width:'+Math.min(100,x.s*14)+'%"></span></div><span class="small">일치 근거: '+x.r.kw.filter(k=>t.includes(k.toLowerCase())).join(", ")+'</span><p>'+x.r.lens+'</p></div>').join(""):'일치 키워드가 없어 미분류입니다. 역할을 억지로 지정하지 않습니다.'}
+$("classifyPersona").onclick=classifyRole;classifyRole();
+function classifyAcc(){let t=$("accidentText").value.toLowerCase(),hits=Object.entries(focusRules).map(([name,words])=>({name,matched:words.filter(w=>t.includes(w.toLowerCase()))})).filter(x=>x.matched.length).sort((a,b)=>b.matched.length-a.matched.length);$("accidentResult").innerHTML=hits.length?hits.map(x=>'<div><b>'+x.name+'</b><p>매칭 키워드: '+x.matched.join(", ")+'</p></div>').join(""):"분류된 위험 포커스가 없습니다. 사례 원문을 보완하거나 전문가 태깅이 필요합니다."}
+$("classifyAccident").onclick=classifyAcc;
+$("focusCards").innerHTML=Object.entries(focusRules).map(([n,w])=>'<div class="card"><h3>'+n+'</h3><p>키워드: '+w.join(" · ")+'</p></div>').join("");
+const eq=$("equipmentSelect");Object.keys(equipment).forEach(k=>eq.add(new Option(k,k)));function renderEq(){let name=eq.value,rows=equipment[name]||[];$("equipmentDetail").innerHTML=rows.map((r,i)=>'<div class="card risk" style="margin-bottom:10px"><h3>'+ (i+1)+'. '+r[0]+'</h3><div class="chain"><span>'+r[1]+'</span><b>→</b><span>'+r[2]+'</span><b>→</b><span>'+r[3]+'</span></div><p><b>취약 부위:</b> '+r[4]+'</p><p><b>관측 후보:</b> '+r[5]+'</p></div>').join("")}
+eq.onchange=renderEq;renderEq();
+$("safetyCards").innerHTML=safety.map(s=>'<div class="card"><h3>'+s[0]+'</h3><p><b>위험:</b> '+s[1]+'</p><p><b>위험 트리거:</b> '+s[2]+'</p><p><b>핵심 통제:</b> '+s[3]+'</p><p style="color:#a12b24"><b>하드 알림 후보:</b> '+s[4]+'</p></div>').join("");
+
+/* Live source API viewer: isolated to avoid changing legacy dashboard functions */
+(()=>{
 const HF_DATASET="nvidia/Nemotron-Personas-Korea";
 const KOSHA_URL="https://persona-manufacturing-kosha-api.onrender.com";
-let liveHF=[],liveKosha=[],hfSplit=null;
-const personaDefinitions=[
-{id:"process_materials",name:"공정·원료·재료 분석",reason:"원료의 조성·물성·반응성과 공정조건의 관계를 검토하는 역할입니다.",keywords:["공정","화학","재료","금속","야금","원료","광물","슬래그","회분","소재","열역학","반응","제련","소성","process","chemical","materials","metallurgy","raw material"]},
-{id:"equipment_maintenance",name:"설비·기계·정비",reason:"기계적 건전성, 회전·구동부, 설비 고장 및 정비작업을 검토하는 역할입니다.",keywords:["기계","설비","정비","보전","회전","펌프","밸브","베어링","기어","용접","배관","압력용기","크레인","지게차","maintenance","mechanical","equipment","rotating","pump","valve"]},
-{id:"electrical_control",name:"전기·계장·자동화",reason:"전기 에너지, 제어시스템, 센서·계측 및 인터록의 신뢰성을 검토하는 역할입니다.",keywords:["전기","계장","자동화","제어","PLC","센서","계측","인터록","전력","모터","instrument","electrical","automation","control","sensor"]},
-{id:"production_operations",name:"생산·운전",reason:"생산부하, 운전조건, 기동·정지 및 작업절차의 영향을 검토하는 역할입니다.",keywords:["생산","운전","조업","오퍼레이터","운전원","용해","소각","보일러","킬른","가열로","production","operator","operation","furnace","kiln"]},
-{id:"safety_environment",name:"안전·환경·보건",reason:"위험성평가, 작업허가, 에너지 격리, 유해인자 및 작업자 보호를 검토하는 역할입니다.",keywords:["안전","산업안전","보건","환경","위험성평가","작업허가","LOTO","밀폐공간","소방","safety","environment","health","risk assessment"]},
-{id:"logistics_lifting",name:"물류·운송·인양",reason:"운반·하역·인양·적재 과정의 충돌, 협착 및 중량물 위험을 검토하는 역할입니다.",keywords:["물류","운송","운반","하역","인양","크레인","호이스트","지게차","적재","창고","logistics","lifting","forklift","crane","transport"]},
-{id:"quality_inspection",name:"품질·검사·분석",reason:"검사·시험·측정과 품질편차, 결함 발견 및 측정오류를 검토하는 역할입니다.",keywords:["품질","검사","시험","분석","측정","비파괴","NDT","품질관리","실험실","laboratory","quality","inspection","testing"]},
-{id:"supervision_management",name:"관리·감독·인력운영",reason:"작업조정, 교대·인력운영, 도급 및 현장 통제·의사소통 위험을 검토하는 역할입니다.",keywords:["관리자","감독","팀장","공장장","생산관리","현장관리","공사관리","프로젝트관리","인사","교육","supervisor","manager","management","project"]}
+const $api=id=>document.getElementById(id);
+const escApi=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const normApi=v=>String(v??"").toLocaleLowerCase().replace(/\s+/g," ");
+let hfRows=[],koshaRows=[],hfSplit=null;
+const personaDefs=[
+{name:"공정·원료·재료 분석",reason:"원료 조성·물성·반응성과 공정조건의 관계를 검토합니다.",kw:["공정","화학","재료","금속","야금","원료","광물","슬래그","회분","소재","열역학","반응","제련","소성","process","chemical","materials","metallurgy","raw material"]},
+{name:"설비·기계·정비",reason:"기계적 건전성, 회전·구동부, 설비 고장 및 정비작업을 검토합니다.",kw:["기계","설비","정비","보전","회전","펌프","밸브","베어링","기어","용접","배관","압력용기","크레인","지게차","maintenance","mechanical","equipment","rotating","pump","valve"]},
+{name:"전기·계장·자동화",reason:"전기 에너지, 제어시스템, 센서·계측 및 인터록 신뢰성을 검토합니다.",kw:["전기","계장","자동화","제어","PLC","센서","계측","인터록","전력","모터","instrument","electrical","automation","control","sensor"]},
+{name:"생산·운전",reason:"생산부하, 운전조건, 기동·정지 및 작업절차의 영향을 검토합니다.",kw:["생산","운전","조업","오퍼레이터","운전원","용해","소각","보일러","킬른","가열로","production","operator","operation","furnace","kiln"]},
+{name:"안전·환경·보건",reason:"위험성평가, 작업허가, 에너지 격리, 유해인자 및 작업자 보호를 검토합니다.",kw:["안전","산업안전","보건","환경","위험성평가","작업허가","LOTO","밀폐공간","소방","safety","environment","health","risk assessment"]},
+{name:"물류·운송·인양",reason:"운반·하역·인양·적재 과정의 충돌, 협착 및 중량물 위험을 검토합니다.",kw:["물류","운송","운반","하역","인양","크레인","호이스트","지게차","적재","창고","logistics","lifting","forklift","crane","transport"]},
+{name:"품질·검사·분석",reason:"검사·시험·측정과 품질편차, 결함 발견 및 측정오류를 검토합니다.",kw:["품질","검사","시험","분석","측정","비파괴","NDT","품질관리","실험실","laboratory","quality","inspection","testing"]},
+{name:"관리·감독·인력운영",reason:"작업조정, 교대·인력운영, 도급 및 현장 통제·의사소통을 검토합니다.",kw:["관리자","감독","팀장","공장장","생산관리","현장관리","공사관리","프로젝트관리","인사","교육","supervisor","manager","management","project"]}
 ];
-const personaFieldWeights={occupation:4,professional_persona:4,skills_and_expertise_list:3,skills_and_expertise:2,detailed_persona:2,career_goals_and_ambitions:1,persona:1};
-const accidentDefinitions=[
-{name:"끼임·말림·협착",reason:"회전·왕복·이송 기계와 작업자 신체가 접촉하거나 끼이는 위험을 하나의 기계적 접촉 유형으로 묶습니다.",keywords:["끼임","말림","협착","회전부","롤러","롤","기어","컨베이어","끼어","LOTO"]},
-{name:"추락·전도",reason:"높이 차이 또는 지지·균형 상실로 사람이 떨어지거나 넘어지는 사고를 묶습니다.",keywords:["추락","떨어짐","전도","넘어짐","개구부","사다리","비계","고소"]},
-{name:"충돌·낙하물",reason:"차량·운반장비·중량물의 이동과 관련된 부딪힘, 맞음, 낙하 위험을 묶습니다.",keywords:["충돌","부딪힘","맞음","낙하","비래","크레인","지게차","인양","운반"]},
-{name:"화재·폭발·화상",reason:"점화·연소·폭발 및 고온 물질 접촉으로 발생하는 열적 위험을 묶습니다.",keywords:["화재","폭발","화상","화염","용융","고온","불티","가스누출","점화"]},
-{name:"질식·중독·유해물질",reason:"산소결핍, 유해가스·화학물질·분진 등 흡입 또는 노출에 따른 건강 위험을 묶습니다.",keywords:["질식","산소결핍","중독","유해가스","밀폐공간","황화수소","일산화탄소","분진","누출"]},
-{name:"감전·전기·에너지",reason:"전기 접촉·누전·아크 및 차단되지 않은 에너지에 따른 위험을 묶습니다.",keywords:["감전","전기","누전","아크","전원","정전","차단기","에너지 차단"]},
-{name:"근골격·수작업",reason:"중량물 취급, 반복동작, 부적절한 자세 등 신체부하에 따른 근골격계 위험을 묶습니다.",keywords:["근골격","중량물","근육","요통","반복작업","수작업","인력운반"]}
+const fieldWeights={occupation:4,professional_persona:4,skills_and_expertise_list:3,skills_and_expertise:2,detailed_persona:2,career_goals_and_ambitions:1,persona:1};
+const accidentDefs=[
+{name:"끼임·말림·협착",reason:"회전·왕복·이송 기계와 작업자 신체 접촉 위험",kw:["끼임","말림","협착","회전부","롤러","롤","기어","컨베이어","끼어","LOTO"]},
+{name:"추락·전도",reason:"높이 차이 또는 지지·균형 상실에 따른 추락·전도",kw:["추락","떨어짐","전도","넘어짐","개구부","사다리","비계","고소"]},
+{name:"충돌·낙하물",reason:"차량·운반장비·중량물 이동 관련 충돌·낙하",kw:["충돌","부딪힘","맞음","낙하","비래","크레인","지게차","인양","운반"]},
+{name:"화재·폭발·화상",reason:"점화·연소·폭발 및 고온 물질 접촉 위험",kw:["화재","폭발","화상","화염","용융","고온","불티","가스누출","점화"]},
+{name:"질식·중독·유해물질",reason:"산소결핍, 유해가스·화학물질·분진 노출",kw:["질식","산소결핍","중독","유해가스","밀폐공간","황화수소","일산화탄소","분진","누출"]},
+{name:"감전·전기·에너지",reason:"전기 접촉·누전·아크 및 차단되지 않은 에너지",kw:["감전","전기","누전","아크","전원","정전","차단기","에너지 차단"]},
+{name:"근골격·수작업",reason:"중량물 취급, 반복동작, 부적절한 자세의 신체부하",kw:["근골격","중량물","근육","요통","반복작업","수작업","인력운반"]}
 ];
-const $=id=>document.getElementById(id);
-const norm=v=>String(v??"").toLocaleLowerCase().replace(/\s+/g," ");
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function personaMatches(row){
- const hits=[];
- for(const p of personaDefinitions){
-  let score=0,matched=[],fieldEvidence=[];
-  for(const [field,weight] of Object.entries(personaFieldWeights)){
-   const value=String(row[field]??"");if(!value)continue;
-   const terms=p.keywords.filter(k=>norm(value).includes(norm(k)));
-   if(terms.length){score+=weight*terms.length;matched.push(...terms);fieldEvidence.push(field+"(×"+weight+"): "+terms.join(", "));}
-  }
-  if(matched.length)hits.push({...p,score,matched:[...new Set(matched)],fieldEvidence});
- }
- return hits.sort((a,b)=>b.score-a.score);
+function personaHits(row){const hits=[];for(const p of personaDefs){let score=0,matched=[];for(const [f,w] of Object.entries(fieldWeights)){const v=String(row[f]??"");const m=p.kw.filter(k=>normApi(v).includes(normApi(k)));if(m.length){score+=w*m.length;matched.push(...m)}}if(matched.length)hits.push({...p,score,matched:[...new Set(matched)]})}return hits.sort((a,b)=>b.score-a.score)}
+function accidentHits(row){const source=Object.entries(row||{}).filter(([,v])=>typeof v==="string"&&v.trim()).map(([k,v])=>k+": "+v).join("\n");const t=normApi(source);return accidentDefs.map(d=>({...d,matched:d.kw.filter(k=>t.includes(normApi(k)))})).filter(d=>d.matched.length)}
+function renderLive(){
+const pc=Object.fromEntries(personaDefs.map(x=>[x.name,0])),ps=Object.fromEntries(personaDefs.map(x=>[x.name,[]]));
+hfRows.forEach(r=>personaHits(r).forEach(h=>{pc[h.name]++;if(ps[h.name].length<2)ps[h.name].push({r,h})}));
+$api("livePersonaCards").innerHTML=personaDefs.map(p=>'<article class="card"><h3>'+escApi(p.name)+'</h3><div class="api-count">'+pc[p.name]+'</div><div class="small">조회 표본 중 매칭 수</div><p>'+escApi(p.reason)+'</p>'+ps[p.name].map(x=>'<details class="api-record"><summary>실제 매칭 · 점수 '+x.h.score+' · '+escApi(x.h.matched.join(", "))+'</summary><p>'+escApi(x.r.occupation||x.r.professional_persona||"직무 미기재")+'</p></details>').join("")+'</article>').join("");
+const ac=Object.fromEntries(accidentDefs.map(x=>[x.name,0])),as=Object.fromEntries(accidentDefs.map(x=>[x.name,[]]));
+koshaRows.forEach(r=>accidentHits(r).forEach(h=>{ac[h.name]++;if(as[h.name].length<3)as[h.name].push({r,h})}));
+$api("liveAccidentCards").innerHTML=accidentDefs.map(d=>'<article class="card"><h3>'+escApi(d.name)+'</h3><div class="api-count">'+ac[d.name]+'</div><div class="small">유형별 매칭 레코드 수</div><p>'+escApi(d.reason)+'</p><div class="small">키워드: '+escApi(d.kw.join(" · "))+'</div>'+as[d.name].map(x=>'<details class="api-record"><summary>'+escApi(x.r["재해구분(제목)"]||x.r["재해구분"]||"사고 제목 미기재")+'</summary><p><b>일치:</b> '+escApi(x.h.matched.join(", "))+'</p><p><b>개요:</b> '+escApi(x.r["재해발생 개요(내용)"]||"미기재")+'</p><p><b>원인:</b> '+escApi(x.r["재해발생 원인"]||"미기재")+'</p><p><b>예방:</b> '+escApi(x.r["재해예방 대책"]||"미기재")+'</p></details>').join("")+'</article>').join("");
+const all=koshaRows.filter(r=>accidentHits(r).length).slice(0,25);
+$api("liveClassifiedCases").innerHTML=all.length?all.map((r,i)=>'<details class="api-record"><summary>'+(i+1)+'. '+escApi(r["재해구분(제목)"]||r["재해구분"]||"사고 제목 미기재")+' · '+accidentHits(r).map(x=>escApi(x.name)).join(" / ")+'</summary><p>'+accidentHits(r).map(x=>escApi(x.name)+": "+escApi(x.matched.join(", "))).join(" · ")+'</p><p><b>개요:</b> '+escApi(r["재해발생 개요(내용)"]||"미기재")+'</p><p><b>원인:</b> '+escApi(r["재해발생 원인"]||"미기재")+'</p></details>').join(""):'<div class="result">현재 표본에서 매칭된 사례가 없습니다.</div>';
 }
-function accidentMatches(row){
- const source=Object.entries(row||{}).filter(([k,v])=>typeof v==="string"&&v.trim()).map(([k,v])=>k+": "+v).join("\n");
- const text=norm(source);
- return accidentDefinitions.map(d=>({...d,matched:d.keywords.filter(k=>text.includes(norm(k))),source})).filter(d=>d.matched.length);
-}
-function renderPersona(){
- const counts=Object.fromEntries(personaDefinitions.map(p=>[p.name,0]));
- const samples=Object.fromEntries(personaDefinitions.map(p=>[p.name,[]]));
- liveHF.forEach(row=>personaMatches(row).forEach(hit=>{counts[hit.name]++;if(samples[hit.name].length<3)samples[hit.name].push({row,hit});}));
- $("personaCards").innerHTML=personaDefinitions.map(p=>{
-  const ex=samples[p.name].map(x=>'<details class="field"><summary>실제 매칭 레코드 · 점수 '+x.hit.score+' · '+esc(x.hit.matched.join(", "))+'</summary><p>'+esc(x.hit.fieldEvidence.join(" / "))+'</p><p>'+esc(String(x.row.occupation||x.row.professional_persona||"직무 미기재")).slice(0,700)+'</p></details>').join("");
-  return '<article class="card"><h3>'+esc(p.name)+'</h3><div class="count">'+counts[p.name]+'</div><div class="small">표본 중 매칭 레코드 수</div><p>'+esc(p.reason)+'</p><div>'+p.keywords.slice(0,9).map(k=>'<span class="tag">'+esc(k)+'</span>').join("")+'</div><div class="small" style="margin-top:8px">실제 매칭 예시 '+(samples[p.name].length)+'건</div>'+ex+'</article>';
- }).join("");
-}
-function renderAccidents(){
- const counts=Object.fromEntries(accidentDefinitions.map(d=>[d.name,0])),samples=Object.fromEntries(accidentDefinitions.map(d=>[d.name,[]]));
- liveKosha.forEach(row=>accidentMatches(row).forEach(hit=>{counts[hit.name]++;if(samples[hit.name].length<8)samples[hit.name].push({row,hit});}));
- $("accidentCards").innerHTML=accidentDefinitions.map(d=>{
-  const ex=samples[d.name].map(x=>'<details class="field"><summary>'+esc(x.row["재해구분(제목)"]||x.row["재해구분"]||"사고 제목 미기재")+' <span class="pill">일치어 '+esc(x.hit.matched.join(", "))+'</span></summary><p><b>발생 개요</b><br>'+esc(x.row["재해발생 개요(내용)"]||"미기재")+'</p><p><b>발생 원인</b><br>'+esc(x.row["재해발생 원인"]||"미기재")+'</p><p><b>예방 대책</b><br>'+esc(x.row["재해예방 대책"]||"미기재")+'</p></details>').join("");
-  return '<article class="card"><h3>'+esc(d.name)+'</h3><div class="count">'+counts[d.name]+'</div><div class="small">이 유형에 매칭된 사고 레코드</div><p>'+esc(d.reason)+'</p><b class="small">판정 키워드</b><div>'+d.keywords.map(k=>'<span class="tag">'+esc(k)+'</span>').join("")+'</div><div style="margin-top:8px">'+(ex||'<span class="small">현재 조회 표본에서 매칭 사례 없음</span>')+'</div></article>';
- }).join("");
- const all=liveKosha.filter(r=>accidentMatches(r).length).slice(0,30);
- $("classifiedCases").innerHTML=all.length?all.map((r,i)=>{const hits=accidentMatches(r);return '<details class="record"><summary>'+(i+1)+'. '+esc(r["재해구분(제목)"]||r["재해구분"]||"사고 제목 미기재")+' · '+hits.map(h=>esc(h.name)).join(" / ")+'</summary><p><b>일치 키워드:</b> '+hits.map(h=>esc(h.name)+': '+esc(h.matched.join(", "))).join(" · ")+'</p><p><b>개요:</b> '+esc(r["재해발생 개요(내용)"]||"미기재")+'</p><p><b>원인:</b> '+esc(r["재해발생 원인"]||"미기재")+'</p><p><b>예방:</b> '+esc(r["재해예방 대책"]||"미기재")+'</p></details>';}).join(""):'<div class="empty">키워드에 매칭된 사례가 없습니다.</div>';
-}
-async function loadHF(){
- liveHF=[];const splitRes=await fetch("https://datasets-server.huggingface.co/splits?dataset="+encodeURIComponent(HF_DATASET),{headers:{Accept:"application/json"}});
- if(!splitRes.ok)throw new Error("Hugging Face splits HTTP "+splitRes.status);
- const sd=await splitRes.json();hfSplit=(sd.splits||[]).find(x=>x.config==="default"&&x.split==="train");
- if(!hfSplit)throw new Error("Hugging Face default/train split을 찾지 못했습니다.");
- let offset=0;while(offset<100){
-  let take=Math.min(10,100-offset),batch=null;
-  while(take>=1){
-   const url="https://datasets-server.huggingface.co/rows?dataset="+encodeURIComponent(hfSplit.dataset)+"&config="+encodeURIComponent(hfSplit.config)+"&split="+encodeURIComponent(hfSplit.split)+"&offset="+offset+"&length="+take;
-   const res=await fetch(url,{headers:{Accept:"application/json"}});
-   if(res.ok){const data=await res.json();batch=(data.rows||[]).map(x=>x.row||x);break;}
-   const body=await res.text();if(res.status===422&&take>1){take=Math.max(1,Math.floor(take/2));continue;}
-   throw new Error("Hugging Face rows HTTP "+res.status+" "+body.slice(0,200));
-  }
-  if(!batch||!batch.length)break;liveHF.push(...batch);offset+=batch.length;if(batch.length<take)break;
- }
- if(!liveHF.length)throw new Error("Hugging Face Persona 0건");
+async function loadHf(){
+hfRows=[];const splitRes=await fetch("https://datasets-server.huggingface.co/splits?dataset="+encodeURIComponent(HF_DATASET));
+if(!splitRes.ok)throw new Error("Hugging Face splits HTTP "+splitRes.status);
+const sd=await splitRes.json();hfSplit=(sd.splits||[]).find(x=>x.config==="default"&&x.split==="train");if(!hfSplit)throw new Error("default/train split 없음");
+let offset=0;while(offset<100){let take=Math.min(10,100-offset),batch=null;while(take>=1){const url="https://datasets-server.huggingface.co/rows?dataset="+encodeURIComponent(hfSplit.dataset)+"&config="+encodeURIComponent(hfSplit.config)+"&split="+encodeURIComponent(hfSplit.split)+"&offset="+offset+"&length="+take;const res=await fetch(url);if(res.ok){const d=await res.json();batch=(d.rows||[]).map(x=>x.row||x);break}const body=await res.text();if(res.status===422&&take>1){take=Math.max(1,Math.floor(take/2));continue}throw new Error("Hugging Face rows HTTP "+res.status+" "+body.slice(0,160))}if(!batch||!batch.length)break;hfRows.push(...batch);offset+=batch.length;if(batch.length<take)break}
+if(!hfRows.length)throw new Error("Hugging Face 조회 0건");
 }
 async function loadKosha(){
- liveKosha=[];let page=1,per=100,totalPages=1,total=null;
- while(page<=totalPages){
-  const res=await fetch(KOSHA_URL+"/api/kosha/accidents?page="+page+"&per_page="+per,{headers:{Accept:"application/json"}});
-  if(!res.ok)throw new Error("KOSHA API HTTP "+res.status+" "+(await res.text()).slice(0,200));
-  const data=await res.json();if(!Array.isArray(data.records))throw new Error("KOSHA API records 배열 누락");
-  liveKosha.push(...data.records);
-  if(page===1){total=Number(data.metadata&&data.metadata.total_count)||null;if(total)totalPages=Math.ceil(total/per);}
-  if(data.count<per)break;page++;
- }
- if(!liveKosha.length)throw new Error("KOSHA 사고 레코드 0건");
+koshaRows=[];let page=1,per=100,totalPages=1;
+while(page<=totalPages){const res=await fetch(KOSHA_URL+"/api/kosha/accidents?page="+page+"&per_page="+per);if(!res.ok)throw new Error("KOSHA HTTP "+res.status+" "+(await res.text()).slice(0,160));const d=await res.json();if(!Array.isArray(d.records))throw new Error("KOSHA records 배열 누락");koshaRows.push(...d.records);if(page===1){const total=Number(d.metadata&&d.metadata.total_count)||0;if(total)totalPages=Math.ceil(total/per)}if(d.count<per)break;page++}
+if(!koshaRows.length)throw new Error("KOSHA 조회 0건");
 }
 async function loadAll(){
- $("reload").disabled=true;$("status").className="status";$("status").textContent="Hugging Face와 KOSHA API를 조회하고 있습니다…";
- const results=await Promise.allSettled([loadHF(),loadKosha()]);
- const errors=results.map((r,i)=>r.status==="rejected"?(i===0?"Hugging Face: ":"KOSHA: ")+r.reason.message:null).filter(Boolean);
- $("hfCount").textContent=liveHF.length.toLocaleString();$("hfMeta").textContent=hfSplit?hfSplit.dataset+" / "+hfSplit.config+" / "+hfSplit.split+" · 최대 100행 표본":"조회 실패";
- $("koshaCount").textContent=liveKosha.length.toLocaleString();$("koshaMeta").textContent="Render API · /api/kosha/accidents · 페이지 단위 조회";
- if(liveHF.length)renderPersona();else $("personaCards").innerHTML='<div class="empty">Persona API 조회 실패. '+esc(errors.join(" / "))+'</div>';
- if(liveKosha.length)renderAccidents();else{$("accidentCards").innerHTML='<div class="empty">KOSHA API 조회 실패.</div>';$("classifiedCases").innerHTML='<div class="empty">사고 원문이 없습니다.</div>';}
- $("hfSamples").innerHTML=liveHF.length?'<h3>Persona 원천 레코드 예시</h3>'+liveHF.slice(0,5).map((r,i)=>'<details class="record"><summary>Persona 원천 '+(i+1)+' · '+esc(r.occupation||r.professional_persona||"직무 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+esc(JSON.stringify(r,null,2).slice(0,5000))+'</pre></details>').join(""):'';
- $("koshaSamples").innerHTML=liveKosha.length?'<h3>산재 원천 레코드 예시</h3>'+liveKosha.slice(0,5).map((r,i)=>'<details class="record"><summary>KOSHA 원천 '+(i+1)+' · '+esc(r["재해구분(제목)"]||"사고 제목 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+esc(JSON.stringify(r,null,2).slice(0,5000))+'</pre></details>').join(""):'';
- $("status").className="status"+(errors.length?" error":"");$("status").textContent=(errors.length?"일부 API 조회 실패: "+errors.join(" | "):"두 API 연결 완료 · Hugging Face "+liveHF.length+"행 표본 / KOSHA "+liveKosha.length+"건 조회")+" · 새로고침으로 다시 조회할 수 있습니다.";
- $("reload").disabled=false;
+const status=$api("liveApiStatus");status.className="api-status";status.textContent="Hugging Face와 KOSHA API를 조회하고 있습니다…";
+const results=await Promise.allSettled([loadHf(),loadKosha()]);
+const errs=results.map((x,i)=>x.status==="rejected"?(i===0?"Hugging Face: ":"KOSHA: ")+x.reason.message:null).filter(Boolean);
+$api("liveHfCount").textContent=hfRows.length.toLocaleString();$api("liveHfMeta").textContent=hfSplit?hfSplit.dataset+" / "+hfSplit.config+" / "+hfSplit.split+" · 최대 100행 표본":"조회 실패";
+$api("liveKoshaCount").textContent=koshaRows.length.toLocaleString();$api("liveKoshaMeta").textContent="Render API · /api/kosha/accidents";
+if(hfRows.length)$api("liveHfSamples").innerHTML=hfRows.slice(0,4).map((r,i)=>'<details class="api-record"><summary>Persona 원천 '+(i+1)+' · '+escApi(r.occupation||r.professional_persona||"직무 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+escApi(JSON.stringify(r,null,2).slice(0,3500))+'</pre></details>').join("");else $api("liveHfSamples").textContent="Hugging Face API 조회 실패";
+if(koshaRows.length)$api("liveKoshaSamples").innerHTML=koshaRows.slice(0,4).map((r,i)=>'<details class="api-record"><summary>KOSHA 원천 '+(i+1)+' · '+escApi(r["재해구분(제목)"]||"사고 제목 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+escApi(JSON.stringify(r,null,2).slice(0,3500))+'</pre></details>').join("");else $api("liveKoshaSamples").textContent="KOSHA API 조회 실패";
+if(hfRows.length||koshaRows.length)renderLive();
+status.className="api-status"+(errs.length?" error":"");status.textContent=errs.length?"일부 API 조회 실패: "+errs.join(" | "):"API 연결 완료 · Hugging Face "+hfRows.length+"행 표본 / KOSHA "+koshaRows.length+"건 조회";
 }
-$("reload").addEventListener("click",loadAll);loadAll();
+const btn=$api("reloadLiveApi");if(btn)btn.addEventListener("click",loadAll);loadAll();
+})();
+
 </script></body></html>
