@@ -52,6 +52,13 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .edge-arrow{font-size:20px;line-height:1;color:#2257a5;font-weight:800}
 .edge-detail{min-height:125px}
 @media(max-width:760px){.edge-map{grid-template-columns:1fr}.edge-link-grid{grid-template-columns:1fr}}
+
+.ontology-node[data-ontology-node]{cursor:pointer;transition:opacity .16s,border-color .16s,box-shadow .16s;position:relative}
+.ontology-node[data-ontology-node]:hover,.ontology-node.node-active{border-color:#2257a5!important;box-shadow:0 0 0 2px #2257a51c}
+.ontology-node.node-muted{opacity:.28}
+.edge-link.edge-muted{opacity:.24}
+.edge-link.edge-related{border-color:#2257a5;background:#eaf1fc;box-shadow:0 0 0 2px #2257a51c}
+.ontology-node[data-ontology-node]:focus-visible{outline:3px solid #2257a5;outline-offset:2px}
 </style></head><body>
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
@@ -112,48 +119,48 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <div class="ontology-flow">
  <div class="ontology-lane source-lane">
   <h3>① 원천 데이터</h3>
-  <article class="ontology-node source-node"><b>Hugging Face</b><p>Nemotron-Personas-Korea</p><small>occupation · professional_persona · skills · detailed_persona</small></article>
-  <article class="ontology-node source-node"><b>KOSHA 사고사례</b><p>사고 제목 · 발생 개요 · 원인 · 예방대책</p><small>원천 사고기록에서 다중 태깅</small></article>
+  <article class="ontology-node source-node" data-ontology-node="hf"><b>Hugging Face</b><p>Nemotron-Personas-Korea</p><small>occupation · professional_persona · skills · detailed_persona</small></article>
+  <article class="ontology-node source-node" data-ontology-node="kosha"><b>KOSHA 사고사례</b><p>사고 제목 · 발생 개요 · 원인 · 예방대책</p><small>원천 사고기록에서 다중 태깅</small></article>
  </div>
  <div class="ontology-lane persona-lane">
   <h3>② Persona 8개 노드</h3>
-  <article class="ontology-node persona-node"><b>P1 공정·원료·재료</b><p>원료 성상·조성·반응성·공정조건 검토</p><small>주요 렌즈: 공정편차·화학반응·열화</small></article>
-  <article class="ontology-node persona-node"><b>P2 설비·기계·정비</b><p>회전·구동·유체설비·정비·에너지 격리</p><small>주요 렌즈: 방호실패·기계고장·LOTO</small></article>
-  <article class="ontology-node persona-node"><b>P3 전기·계장·자동화</b><p>전기·PLC·센서·인터록·계측</p><small>주요 렌즈: 감전·아크·인터록 오류</small></article>
-  <article class="ontology-node persona-node"><b>P4 생산·운전</b><p>운전모드·생산부하·기동정지·작업순서</p><small>주요 렌즈: 비정상 운전·절차 이탈</small></article>
-  <article class="ontology-node persona-node"><b>P5 안전·환경·보건</b><p>위험성평가·작업허가·유해인자·보호조치</p><small>주요 렌즈: 모든 사고유형의 예방통제</small></article>
-  <article class="ontology-node persona-node"><b>P6 물류·운송·인양</b><p>지게차·크레인·하역·운반·중량물</p><small>주요 렌즈: 충돌·낙하·협착</small></article>
-  <article class="ontology-node persona-node"><b>P7 품질·검사·분석</b><p>검사·시험·측정·NDT·시료채취</p><small>주요 렌즈: 이상징후·측정누락·작업노출</small></article>
-  <article class="ontology-node persona-node"><b>P8 관리·감독·인력운영</b><p>작업조정·교대·도급·인력·동시작업</p><small>주요 렌즈: 감독공백·작업간섭·허가누락</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P1"><b>P1 공정·원료·재료</b><p>원료 성상·조성·반응성·공정조건 검토</p><small>주요 렌즈: 공정편차·화학반응·열화</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P2"><b>P2 설비·기계·정비</b><p>회전·구동·유체설비·정비·에너지 격리</p><small>주요 렌즈: 방호실패·기계고장·LOTO</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P3"><b>P3 전기·계장·자동화</b><p>전기·PLC·센서·인터록·계측</p><small>주요 렌즈: 감전·아크·인터록 오류</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P4"><b>P4 생산·운전</b><p>운전모드·생산부하·기동정지·작업순서</p><small>주요 렌즈: 비정상 운전·절차 이탈</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P5"><b>P5 안전·환경·보건</b><p>위험성평가·작업허가·유해인자·보호조치</p><small>주요 렌즈: 모든 사고유형의 예방통제</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P6"><b>P6 물류·운송·인양</b><p>지게차·크레인·하역·운반·중량물</p><small>주요 렌즈: 충돌·낙하·협착</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P7"><b>P7 품질·검사·분석</b><p>검사·시험·측정·NDT·시료채취</p><small>주요 렌즈: 이상징후·측정누락·작업노출</small></article>
+  <article class="ontology-node persona-node" data-ontology-node="P8"><b>P8 관리·감독·인력운영</b><p>작업조정·교대·도급·인력·동시작업</p><small>주요 렌즈: 감독공백·작업간섭·허가누락</small></article>
  </div>
  <div class="ontology-lane accident-lane">
   <h3>③ 산재 유형 7개 노드</h3>
-  <article class="ontology-node accident-node"><b>A1 끼임·말림·협착</b><p>컨베이어·롤·권취기·회전축·정비 중 가동</p><small>연결 렌즈: P2·P3·P4·P5·P6·P8</small></article>
-  <article class="ontology-node accident-node"><b>A2 추락·전도</b><p>고로 상부·집진기·탱크·플랫폼·개구부</p><small>연결 렌즈: P2·P4·P5·P7·P8</small></article>
-  <article class="ontology-node accident-node"><b>A3 충돌·낙하물</b><p>천장크레인·지게차·스크랩·용선 운반</p><small>연결 렌즈: P2·P5·P6·P8</small></article>
-  <article class="ontology-node accident-node"><b>A4 화재·폭발·화상</b><p>코크스·고로가스·전로·용선·용강·고온표면</p><small>연결 렌즈: P1·P3·P4·P5·P8</small></article>
-  <article class="ontology-node accident-node"><b>A5 질식·중독·유해물질</b><p>가스배관·집진기·덕트·피트·밀폐공간</p><small>연결 렌즈: P1·P4·P5·P7·P8</small></article>
-  <article class="ontology-node accident-node"><b>A6 감전·전기·에너지</b><p>수배전반·압연모터·전기로·이동형 공구</p><small>연결 렌즈: P2·P3·P4·P5·P8</small></article>
-  <article class="ontology-node accident-node"><b>A7 근골격·수작업</b><p>내화물 보수·샘플링·코일 결속·중량물 취급</p><small>연결 렌즈: P1·P2·P5·P7·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A1"><b>A1 끼임·말림·협착</b><p>컨베이어·롤·권취기·회전축·정비 중 가동</p><small>연결 렌즈: P2·P3·P4·P5·P6·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A2"><b>A2 추락·전도</b><p>고로 상부·집진기·탱크·플랫폼·개구부</p><small>연결 렌즈: P2·P4·P5·P7·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A3"><b>A3 충돌·낙하물</b><p>천장크레인·지게차·스크랩·용선 운반</p><small>연결 렌즈: P2·P5·P6·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A4"><b>A4 화재·폭발·화상</b><p>코크스·고로가스·전로·용선·용강·고온표면</p><small>연결 렌즈: P1·P3·P4·P5·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A5"><b>A5 질식·중독·유해물질</b><p>가스배관·집진기·덕트·피트·밀폐공간</p><small>연결 렌즈: P1·P4·P5·P7·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A6"><b>A6 감전·전기·에너지</b><p>수배전반·압연모터·전기로·이동형 공구</p><small>연결 렌즈: P2·P3·P4·P5·P8</small></article>
+  <article class="ontology-node accident-node" data-ontology-node="A7"><b>A7 근골격·수작업</b><p>내화물 보수·샘플링·코일 결속·중량물 취급</p><small>연결 렌즈: P1·P2·P5·P7·P8</small></article>
  </div>
  <div class="ontology-lane risk-lane">
   <h3>④ 산업현장 Risk 7개 노드</h3>
-  <article class="ontology-node risk-node"><b>R1 회전·이송부 협착 위험</b><p>방호문·인터록·LOTO 상태와 구동부 작동이 충돌</p><small>Threshold (방호문 열림=1 AND 위험부 속도&gt;0 rpm) 또는 정비허가=1 AND LOTO 확인=0</small></article>
-  <article class="ontology-node risk-node"><b>R2 고소·개구부 추락 위험</b><p>상부작업·난간·발판·개구부 방호 불량</p><small>Threshold (상부 난간 높이&lt;0.90 m 또는 개구부 방호 미설치); 작업면 추락위험은 작업별 평가</small></article>
-  <article class="ontology-node risk-node"><b>R3 차량·중량물 충돌/낙하 위험</b><p>보행자-차량 동선 중첩·인양물 하부 진입·과부하</p><small>Threshold (충돌예측시간 TTC≤3 s: 시범 경보값) 또는 크레인 하중≥정격 90% 사전경보·≥100% 운전제한 검토</small></article>
-  <article class="ontology-node risk-node"><b>R4 가연성가스·고온 화재 위험</b><p>고로·코크스 가스 누출, 점화원, 용융물 비산</p><small>Threshold (가연성가스 10% LEL 사전경보 / 20% LEL 고경보: 검지기·공정별 승인 설정값)</small></article>
-  <article class="ontology-node risk-node"><b>R5 산소결핍·유해가스 노출 위험</b><p>덕트·집진기·탱크·피트 밀폐공간 진입</p><small>Threshold (O₂&lt;18% 또는 ≥23.5%; CO≥30 ppm; H₂S≥10 ppm; CO₂≥1.5%)</small></article>
-  <article class="ontology-node risk-node"><b>R6 전기·잔류에너지 위험</b><p>정비 중 무전압 미확인·오접속·재기동</p><small>Threshold (LOTO 작업 중 검전 전압&gt;0 V이면 진입금지); 적용 대상 누전차단기 (≤30 mA, ≤0.03 s)</small></article>
-  <article class="ontology-node risk-node"><b>R7 반복·중량 수작업 부담 위험</b><p>축로·내화물 보수·샘플링·코일 포장 작업</p><small>Threshold (REBA≥8 고위험 조치; RULA≥5 개선 검토, ≥7 즉시 개선 검토: 선별평가 기준)</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R1"><b>R1 회전·이송부 협착 위험</b><p>방호문·인터록·LOTO 상태와 구동부 작동이 충돌</p><small>Threshold (방호문 열림=1 AND 위험부 속도&gt;0 rpm) 또는 정비허가=1 AND LOTO 확인=0</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R2"><b>R2 고소·개구부 추락 위험</b><p>상부작업·난간·발판·개구부 방호 불량</p><small>Threshold (상부 난간 높이&lt;0.90 m 또는 개구부 방호 미설치); 작업면 추락위험은 작업별 평가</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R3"><b>R3 차량·중량물 충돌/낙하 위험</b><p>보행자-차량 동선 중첩·인양물 하부 진입·과부하</p><small>Threshold (충돌예측시간 TTC≤3 s: 시범 경보값) 또는 크레인 하중≥정격 90% 사전경보·≥100% 운전제한 검토</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R4"><b>R4 가연성가스·고온 화재 위험</b><p>고로·코크스 가스 누출, 점화원, 용융물 비산</p><small>Threshold (가연성가스 10% LEL 사전경보 / 20% LEL 고경보: 검지기·공정별 승인 설정값)</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R5"><b>R5 산소결핍·유해가스 노출 위험</b><p>덕트·집진기·탱크·피트 밀폐공간 진입</p><small>Threshold (O₂&lt;18% 또는 ≥23.5%; CO≥30 ppm; H₂S≥10 ppm; CO₂≥1.5%)</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R6"><b>R6 전기·잔류에너지 위험</b><p>정비 중 무전압 미확인·오접속·재기동</p><small>Threshold (LOTO 작업 중 검전 전압&gt;0 V이면 진입금지); 적용 대상 누전차단기 (≤30 mA, ≤0.03 s)</small></article>
+  <article class="ontology-node risk-node" data-ontology-node="R7"><b>R7 반복·중량 수작업 부담 위험</b><p>축로·내화물 보수·샘플링·코일 포장 작업</p><small>Threshold (REBA≥8 고위험 조치; RULA≥5 개선 검토, ≥7 즉시 개선 검토: 선별평가 기준)</small></article>
  </div>
 </div>
 <h3 style="margin-top:24px">설비 건전성 Risk — 내화물·열설비 연계</h3>
 <div class="ontology-risk-grid">
- <article class="ontology-node risk-node"><b>F1 과열·핫스팟</b><p>버너 편향·가스 편류·냉각 이상 → 국부 온도 상승</p><small>Threshold (설비별 정상 기준선 대비 +2σ 또는 인접부 온도편차 관리한계 초과; 시계열 기준선으로 설정)</small></article>
- <article class="ontology-node risk-node"><b>F2 침식·마모</b><p>분진·촉매·회분·슬래그 충돌 → 라이닝 두께 감소</p><small>Threshold (측정 잔여두께≤설계 최소두께 또는 두께 감소율이 정비주기 내 허용손실 초과)</small></article>
- <article class="ontology-node risk-node"><b>F3 화학부식·용손</b><p>슬래그·알칼리·염화물·황화물 조성 변화 → 침투·반응층</p><small>Threshold (원료·슬래그 조성이 승인된 내화물 적합 운전창 이탈)</small></article>
- <article class="ontology-node risk-node"><b>F4 열충격·열피로</b><p>기동정지·급가열·급냉각 → 열응력·균열·스폴링</p><small>Threshold (승강온 속도&gt;제조사 승인 dry-out/운전 램프 또는 열사이클 설계한계)</small></article>
- <article class="ontology-node risk-node"><b>F5 박락·구조건전성 저하</b><p>앵커 부식·조인트 열화·시공결함·캐스터블 건조불량</p><small>Threshold (앵커·조인트 결함 검출=1 또는 열화상 핫스팟·두께검사 기준 초과)</small></article>
+ <article class="ontology-node risk-node" data-ontology-node="F1"><b>F1 과열·핫스팟</b><p>버너 편향·가스 편류·냉각 이상 → 국부 온도 상승</p><small>Threshold (설비별 정상 기준선 대비 +2σ 또는 인접부 온도편차 관리한계 초과; 시계열 기준선으로 설정)</small></article>
+ <article class="ontology-node risk-node" data-ontology-node="F2"><b>F2 침식·마모</b><p>분진·촉매·회분·슬래그 충돌 → 라이닝 두께 감소</p><small>Threshold (측정 잔여두께≤설계 최소두께 또는 두께 감소율이 정비주기 내 허용손실 초과)</small></article>
+ <article class="ontology-node risk-node" data-ontology-node="F3"><b>F3 화학부식·용손</b><p>슬래그·알칼리·염화물·황화물 조성 변화 → 침투·반응층</p><small>Threshold (원료·슬래그 조성이 승인된 내화물 적합 운전창 이탈)</small></article>
+ <article class="ontology-node risk-node" data-ontology-node="F4"><b>F4 열충격·열피로</b><p>기동정지·급가열·급냉각 → 열응력·균열·스폴링</p><small>Threshold (승강온 속도&gt;제조사 승인 dry-out/운전 램프 또는 열사이클 설계한계)</small></article>
+ <article class="ontology-node risk-node" data-ontology-node="F5"><b>F5 박락·구조건전성 저하</b><p>앵커 부식·조인트 열화·시공결함·캐스터블 건조불량</p><small>Threshold (앵커·조인트 결함 검출=1 또는 열화상 핫스팟·두께검사 기준 초과)</small></article>
 </div>
 <div class="ontology-detail" id="ontologyDetail">
 <h3>노드와 Edge 해석</h3>
@@ -268,6 +275,27 @@ e19:["관측 신호 → 위험 경보","TRIGGERS · 조건부 경보 발생","�
 e20:["R1~R7 → 통제조치","MITIGATED_BY · 위험 저감","경보 등급과 승인된 절차에 따라 작업중지·접근제한·에너지 격리·환기·보조장비·재평가를 연결합니다.","현장 비상절차, 안전관리자 승인, 인터록 권한. 자동 작업중지는 별도 안전검증 전제 없이는 실행하지 않습니다."],
 e21:["운전·원료·검사 데이터 → F1~F5","INDICATES_DEGRADATION · 설비 열화 지시","온도·조성·마모·열사이클·결함 데이터가 설비별 승인 운전창 또는 검사 한계를 벗어날 때 연결합니다.","설비 사양, 내화물 grade, 설계 최소두께, 열화상·검사 이력."]
 };
+
+const nodeEdgeMap={
+hf:["e1"],kosha:["e2"],
+P1:["e3"],P2:["e4"],P3:["e5"],P4:["e6"],P5:["e7"],P6:["e8"],P7:["e9"],P8:["e10"],
+A1:["e3","e4","e5","e6","e7","e8","e10","e11"],A2:["e4","e6","e7","e9","e10","e12"],A3:["e4","e7","e8","e10","e13"],A4:["e3","e5","e6","e7","e10","e14"],A5:["e3","e6","e7","e9","e10","e15"],A6:["e4","e5","e6","e7","e10","e16"],A7:["e3","e4","e7","e9","e10","e17"],
+R1:["e11","e18","e19","e20"],R2:["e12","e18","e19","e20"],R3:["e13","e18","e19","e20"],R4:["e14","e18","e19","e20"],R5:["e15","e18","e19","e20"],R6:["e16","e18","e19","e20"],R7:["e17","e18","e19","e20"],
+F1:["e21"],F2:["e21"],F3:["e21"],F4:["e21"],F5:["e21"]
+};
+const nodeTitles={hf:"Hugging Face 원천 데이터",kosha:"KOSHA 사고사례",P1:"P1 공정·원료·재료",P2:"P2 설비·기계·정비",P3:"P3 전기·계장·자동화",P4:"P4 생산·운전",P5:"P5 안전·환경·보건",P6:"P6 물류·운송·인양",P7:"P7 품질·검사·분석",P8:"P8 관리·감독·인력운영",A1:"A1 끼임·말림·협착",A2:"A2 추락·전도",A3:"A3 충돌·낙하물",A4:"A4 화재·폭발·화상",A5:"A5 질식·중독·유해물질",A6:"A6 감전·전기·에너지",A7:"A7 근골격·수작업",R1:"R1 회전·이송부 협착",R2:"R2 고소·개구부 추락",R3:"R3 차량·중량물 충돌·낙하",R4:"R4 가연성가스·고온 화재",R5:"R5 산소결핍·유해가스",R6:"R6 전기·잔류에너지",R7:"R7 반복·중량 수작업",F1:"F1 과열·핫스팟",F2:"F2 침식·마모",F3:"F3 화학부식·용손",F4:"F4 열충격·열피로",F5:"F5 박락·구조건전성"};
+document.querySelectorAll(".ontology-node[data-ontology-node]").forEach(node=>{
+ node.setAttribute("tabindex","0");node.setAttribute("role","button");
+ const activate=()=>{
+  const id=node.dataset.ontologyNode,related=nodeEdgeMap[id]||[];
+  document.querySelectorAll(".ontology-node[data-ontology-node]").forEach(n=>n.classList.toggle("node-active",n===node));
+  document.querySelectorAll(".edge-link").forEach(edge=>{const on=related.includes(edge.dataset.edge);edge.classList.toggle("edge-related",on);edge.classList.toggle("edge-muted",related.length>0&&!on)});
+  const panel=document.getElementById("ontologyDetail");
+  panel.innerHTML="<h3>"+nodeTitles[id]+"</h3><p><b>연결된 관계:</b> "+(related.length?related.map(x=>edgeDefinitions[x][1].split(" · ")[0]).join(" · "):"정의된 Edge 없음")+"</p><p>강조된 화살표를 클릭하면 관계의 연결 조건과 데이터 근거를 확인할 수 있습니다. "+(id[0]==="P"?"Persona는 사고 원인이 아니라 전문 검토 관점입니다.":id[0]==="A"?"산재유형은 사고 메커니즘 분류이며 현장 Risk와 구분합니다.":id[0]==="R"?"현장 Risk는 작업·설비·노출 조건이 확인될 때 활성화합니다.":"설비 건전성 열화 경로는 작업자 산재 경로와 별도로 평가합니다.")+"</p>";
+  if(related.length){const first=document.querySelector('.edge-link[data-edge="'+related[0]+'"]');if(first){const d=edgeDefinitions[related[0]];document.getElementById("edgeDetail").innerHTML="<h3>"+d[0]+"</h3><p><b>관계:</b> "+d[1]+"</p><p><b>연결 규칙:</b> "+d[2]+"</p><p class='small'><b>판정 근거:</b> "+d[3]+"</p>";}}
+ };
+ node.addEventListener("click",activate);node.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate();}});
+});
 document.querySelectorAll(".edge-link").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll(".edge-link").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");
  const d=edgeDefinitions[btn.dataset.edge];if(!d)return;
