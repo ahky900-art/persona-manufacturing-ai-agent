@@ -159,7 +159,7 @@ Threshold 레코드는 최소한 다음 필드를 가진다.
 |---|---|---|
 | SRC-KOSHA-ACCIDENT-20260903 | https://www.data.go.kr/data/15163146/fileData.do | 사고사례 원천 구조·재해형태·작업·설비·예방대책 |
 | SRC-KOSHA-RISK-GUIDE-2026 | https://www.law.go.kr/admRulLsInfoP.do?admRulSeq=2100000288038 | 2026-11-04 시행 위험성평가 지침 |
-| SRC-KOSHA-SAFETY-RULE-618 | https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=280187 | 밀폐공간·적정공기 기준, 제618조 이하 |
+| SRC-KOSHA-SAFETY-RULE-618 | https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1033350811 | 밀폐공간·적정공기 기준, 제618조 이하 |
 | SRC-OSHA-1910-147 | https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.147 | 위험에너지 제어, LOTO |
 | SRC-OSHA-1910-212 | https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.212 | 기계 방호·회전부·물림점 |
 | SRC-BF-REFRACTORY-REVIEW-2022 | https://doi.org/10.1002/srin.202200266 | 고로 내화물 물리손상·화학부식·기계침식 |
