@@ -424,8 +424,8 @@ $api("liveClassifiedCases").innerHTML=all.length?all.map((r,i)=>'<details class=
 async function loadHf(){
 hfRows=[];hfSplit={dataset:HF_DATASET,config:"default",split:"train"};
 let offset=0;
-while(offset<100){
- const take=Math.min(10,100-offset);
+while(offset<500){
+ const take=Math.min(100,500-offset);
  const url=KOSHA_URL+"/api/huggingface/personas?offset="+offset+"&length="+take;
  let res;
  try{res=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"})}
@@ -448,7 +448,7 @@ async function loadAll(){
 const status=$api("liveApiStatus");status.className="api-status";status.textContent="Hugging Face와 KOSHA API를 조회하고 있습니다…";
 const results=await Promise.allSettled([loadHf(),loadKosha()]);
 const errs=results.map((x,i)=>x.status==="rejected"?(i===0?"Hugging Face: ":"KOSHA: ")+x.reason.message:null).filter(Boolean);
-$api("liveHfCount").textContent=hfRows.length.toLocaleString();$api("liveHfMeta").textContent=hfSplit?hfSplit.dataset+" / "+hfSplit.config+" / "+hfSplit.split+" · 최대 100행 표본":"조회 실패";
+$api("liveHfCount").textContent=hfRows.length.toLocaleString();$api("liveHfMeta").textContent=hfSplit?hfSplit.dataset+" / "+hfSplit.config+" / "+hfSplit.split+" · 최대 500행 표본":"조회 실패";
 $api("liveKoshaCount").textContent=koshaRows.length.toLocaleString();$api("liveKoshaMeta").textContent="Render API · /api/kosha/accidents";
 if(hfRows.length)$api("liveHfSamples").innerHTML=hfRows.slice(0,4).map((r,i)=>'<details class="api-record"><summary>Persona 원천 '+(i+1)+' · '+escApi(r.occupation||r.professional_persona||"직무 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+escApi(JSON.stringify(r,null,2).slice(0,3500))+'</pre></details>').join("");else $api("liveHfSamples").textContent="Hugging Face API 조회 실패";
 if(koshaRows.length)$api("liveKoshaSamples").innerHTML=koshaRows.slice(0,4).map((r,i)=>'<details class="api-record"><summary>KOSHA 원천 '+(i+1)+' · '+escApi(r["재해구분(제목)"]||"사고 제목 미기재")+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">'+escApi(JSON.stringify(r,null,2).slice(0,3500))+'</pre></details>').join("");else $api("liveKoshaSamples").textContent="KOSHA API 조회 실패";
