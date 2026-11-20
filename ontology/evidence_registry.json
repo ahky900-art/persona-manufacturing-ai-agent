@@ -40,7 +40,8 @@
         "risk_acceptability",
         "control_action"
       ],
-      "status": "source_verified"
+      "status": "reference_identified_current_revision_and_clause_mapping_must_be_checked_before_production",
+      "notes": "Do not treat this record as a verified numeric scoring formula or universal risk acceptance threshold."
     },
     {
       "id": "SRC-KOSHA-SAFETY-RULE-618",
