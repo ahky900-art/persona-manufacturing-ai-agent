@@ -40,11 +40,23 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .source-node{border-left-color:#5b8fd3}.persona-node{border-left-color:#56a17b}.accident-node{border-left-color:#d4a047}.risk-node{border-left-color:#c76c6c}
 .ontology-risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:10px}
 @media(max-width:900px){.ontology-flow{grid-template-columns:repeat(4,minmax(245px,1fr))}}
+
+/* Clickable ontology edge map */
+.edge-map{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:12px;margin:12px 0}
+.edge-stage{border:1px solid var(--line);border-radius:11px;background:#f8fafd;padding:12px;min-width:0}
+.edge-stage h4{margin:0 0 10px;color:#263d5b;font-size:14px}
+.edge-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.edge-link{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;width:100%;border:1px solid #cbd6e4;border-radius:8px;background:#fff;padding:9px 7px;color:#24364e;cursor:pointer;font:inherit;text-align:center}
+.edge-link:hover,.edge-link.selected{border-color:#2257a5;background:#eaf1fc;box-shadow:0 0 0 2px #2257a51a}
+.edge-link b{font-size:12px}.edge-link small{flex-basis:100%;font-size:10px;letter-spacing:.035em;color:#526783}
+.edge-arrow{font-size:20px;line-height:1;color:#2257a5;font-weight:800}
+.edge-detail{min-height:125px}
+@media(max-width:760px){.edge-map{grid-template-columns:1fr}.edge-link-grid{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
 <div class="notice"><b>중요한 한계:</b> 이 페이지는 GitHub Pages에서 실행되는 정적 분석 데모입니다. 실시간 PLC·센서·작업자 위치 데이터에 연결되어 있지 않으며, 표시된 위험 경로는 현장 검증 전의 조건부 가설입니다. Persona로 개인의 사고확률을 예측하지 않습니다.</div>
-<nav id="tabs"><button class="active" data-tab="overview">개요</button><button data-tab="persona">Persona 분류</button><button data-tab="accident">사고 포커스</button><button data-tab="equipment">산업설비 Risk</button><button data-tab="safety">작업자 안전</button><button data-tab="actualdata">실제 데이터 API</button><a href="#ontology" aria-label="온톨로지 그래프 바로 열기">온톨로지 그래프</a><button data-tab="method">검증·출처</button></nav>
+<nav id="tabs"><button class="active" data-tab="overview">개요</button><button data-tab="persona">Persona 분류</button><button data-tab="accident">사고 포커스</button><button data-tab="equipment">산업설비 Risk</button><button data-tab="safety">작업자 안전</button><button data-tab="ontology">온톨로지 그래프</button><button data-tab="actualdata">실제 데이터 API</button><button data-tab="method">검증·출처</button></nav>
 <section id="overview" class="panel active"><h2>분석 파이프라인</h2><p class="sub">합성 인물 특성으로 위험도를 계산하는 것이 아니라, 전문성에 따라 검토할 관점을 나누고 실제 설비·작업 데이터로 위험을 확인합니다.</p>
 <div class="chain"><span>Hugging Face Persona</span><b>→</b><span>직무 근거 분류</span><b>→</b><span>KOSHA 사고 포커스</span><b>→</b><span>설비 온톨로지</span><b>→</b><span>관측 후보·현장 검토</span></div>
 <div class="grid"><div class="card"><div class="small">기능적 Persona 역할</div><div class="kpi">8</div><p>직무·전문성 키워드 기반 다중 분류</p></div><div class="card"><div class="small">사고 포커스 태그</div><div class="kpi">7</div><p>사고 서술에서 위험유형 추출</p></div><div class="card"><div class="small">산업설비 프로파일</div><div class="kpi">11</div><p>Refractory 저장소 기반 설비군</p></div><div class="card"><div class="small">실시간 데이터 연동</div><div class="kpi">0</div><p>현재는 정적 데모, 실시간 감지 아님</p></div></div>
@@ -149,44 +161,45 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <p class="small">주요 Edge: HAS_FIELD → CLASSIFIED_AS(P1~P8) → REVIEWS(A1~A7) → CAN_OCCUR_IN(R1~R7) → INDICATED_BY(센서·작업허가·LOTO·검사) → MITIGATED_BY(방호·격리·출입통제·작업개선). F1~F5는 별도의 설비건전성 위험 경로입니다.</p>
 </div>
 
-<h3 style="margin-top:22px">Edge 연결 규칙 — 노드 간 관계 정의</h3>
-<p class="sub">각 Edge는 방향·관계 의미·연결 조건을 가집니다. Persona는 위험의 원인이 아니라 검토 전문영역이며, A→R은 사고유형이 현장 위험으로 나타나는 경로입니다.</p>
-<div class="threshold-wrap">
-<table class="threshold-table ontology-edge-table">
-<thead><tr><th>출발 노드 → 도착 노드</th><th>Edge 관계</th><th>연결 규칙 / 조건</th><th>판정 근거</th></tr></thead>
-<tbody>
-<tr><td>Hugging Face → P1~P8</td><td>CLASSIFIED_AS</td><td>직무·전문성 필드의 분류 키워드가 역할별 최소 점수를 충족할 때 연결. 다중 라벨 허용.</td><td>occupation, professional_persona, skills, detailed_persona 및 분류 점수</td></tr>
-<tr><td>KOSHA → A1~A7</td><td>TAGGED_AS</td><td>사고 제목·개요·원인·예방대책에서 유형별 핵심어 또는 동의어가 확인될 때 연결. 복수 유형 동시 태깅 허용.</td><td>원천 사고기록, 키워드 일치 문구, 태깅 신뢰도</td></tr>
-<tr><td>P1 → A4, A5, A7</td><td>REVIEWS</td><td>원료·재료 조성, 반응성, 분진·유해성, 수작업 취급조건이 해당 사고 메커니즘과 관련될 때.</td><td>원료 성적서, MSDS, 입도·수분·조성, 작업방법</td></tr>
-<tr><td>P2 → A1, A2, A3, A6, A7</td><td>REVIEWS</td><td>기계 구동·방호·정비·인양·에너지 격리 또는 정비 작업부하가 관련될 때.</td><td>설비상태, 가드·인터록, 정비이력, LOTO, 인양계획</td></tr>
-<tr><td>P3 → A1, A4, A6</td><td>REVIEWS</td><td>전기·계장·PLC·인터록·검지기·자동재기동 신호가 사고 경로에 관여할 때.</td><td>PLC 이벤트, 인터록 로그, 전압·누설전류, 가스검지기 상태</td></tr>
-<tr><td>P4 → A1~A7</td><td>REVIEWS</td><td>기동·정지·운전모드·생산부하·비정상 운전 또는 작업순서가 노출조건을 바꿀 때.</td><td>운전모드, 생산량, 작업표준, 알람·운전 이력</td></tr>
-<tr><td>P5 → A1~A7</td><td>CONTROLS</td><td>위험성평가·작업허가·보호구·출입통제·비상대응 등 예방통제의 적정성을 확인할 때.</td><td>위험성평가서, 작업허가서, 점검표, 교육·비상훈련 기록</td></tr>
-<tr><td>P6 → A1, A3, A7</td><td>REVIEWS</td><td>차량·보행자 동선, 하역·운송·인양 또는 중량물 수작업이 존재할 때.</td><td>차량 위치·속도, 크레인 하중, 동선계획, 작업인원</td></tr>
-<tr><td>P7 → A2, A5, A7</td><td>VERIFIES</td><td>측정·검사·시료채취·NDT 등 검사 작업이 고소·유해환경·반복동작 노출을 동반할 때.</td><td>검사작업허가, 측정값, 검사절차, 노출시간</td></tr>
-<tr><td>P8 → A1~A7</td><td>COORDINATES</td><td>도급·교대·동시작업·작업간섭·감독공백·인력부족이 통제 실패에 영향을 줄 때.</td><td>작업조정 기록, 교대일지, 도급작업계획, 감독자 배치</td></tr>
-<tr><td>A1 → R1</td><td>CAN_MANIFEST_AS</td><td>회전·이송부 접근 또는 정비 중 구동 가능성이 있고 방호·인터록·LOTO 통제가 불충분할 때.</td><td>가드 상태, 위험부 속도, 정비허가, LOTO 확인</td></tr>
-<tr><td>A2 → R2</td><td>CAN_MANIFEST_AS</td><td>고소·개구부 작업 중 추락방호가 없거나 작업자 접근이 통제되지 않을 때.</td><td>작업 위치, 난간·개구부 방호, 안전대 체결, 작업허가</td></tr>
-<tr><td>A3 → R3</td><td>CAN_MANIFEST_AS</td><td>차량·보행자 동선 중첩, 인양물 하부 진입, 충돌예측시간 또는 정격하중 기준 초과 시.</td><td>위치·속도, TTC, 크레인 하중률, 출입구역</td></tr>
-<tr><td>A4 → R4</td><td>CAN_MANIFEST_AS</td><td>가연성가스 누출·농도 상승 또는 고온·점화원·용융물 비산이 함께 존재할 때.</td><td>%LEL, 가스압력·유량, 화염·온도, 작업허가</td></tr>
-<tr><td>A5 → R5</td><td>CAN_MANIFEST_AS</td><td>밀폐공간·덕트·피트 진입 중 산소·유해가스 농도가 적정공기 기준을 벗어날 때.</td><td>O₂, CO, H₂S, CO₂, 환기상태, 진입허가</td></tr>
-<tr><td>A6 → R6</td><td>CAN_MANIFEST_AS</td><td>전기·유체·중력 등 위험에너지 격리 후 무전압·잔류에너지 제거가 확인되지 않을 때.</td><td>검전, LOTO, 접지, 차단기·누전차단기 상태</td></tr>
-<tr><td>A7 → R7</td><td>CAN_MANIFEST_AS</td><td>중량물·반복동작·불리한 자세·장시간 작업이 작업별 인간공학 관리기준을 초과할 때.</td><td>중량·빈도·시간, 자세평가, 작업자 증상·유해요인조사</td></tr>
-<tr><td>R1~R7 → 관측 신호</td><td>INDICATED_BY</td><td>위험별 필수 센서·설비상태·작업허가·작업자 위치 데이터가 유효하고 시간 동기화될 때만 평가.</td><td>센서 품질, 통신상태, 타임스탬프, 결측·이상치</td></tr>
-<tr><td>관측 신호 → R1~R7</td><td>TRIGGERS</td><td>노드에 정의된 AND/OR 조건이 성립하고 지속시간·히스테리시스 조건까지 충족하면 경보 상태로 전이.</td><td>Threshold 값, 지속시간, 재설정 조건, 신호 신뢰도</td></tr>
-<tr><td>R1~R7 → 통제조치</td><td>MITIGATED_BY</td><td>경보등급에 따라 작업중지·접근제한·에너지 격리·환기·보조장비·재평가 중 승인된 조치 실행.</td><td>현장 비상절차, 안전관리자 승인, 인터록 권한</td></tr>
-<tr><td>운전·원료·검사 데이터 → F1~F5</td><td>INDICATES_DEGRADATION</td><td>온도·조성·마모·열사이클·결함 데이터가 설비별 승인 운전창 또는 검사한계를 벗어날 때.</td><td>설비 사양, 내화물 grade, 설계 최소두께, 열화상·검사 이력</td></tr>
-</tbody></table></div>
-<h3 style="margin-top:20px">Edge 평가 순서 및 논리</h3>
-<div class="card">
-<ol>
-<li><b>데이터 유효성:</b> 센서 교정·통신·타임스탬프·결측을 먼저 검사합니다. 유효하지 않은 신호는 정상으로 간주하지 않고 '데이터 불확실' 상태로 분리합니다.</li>
-<li><b>노드 활성화:</b> 분류 근거가 확인되면 P/A 노드를 활성화합니다. Persona는 원인 점수가 아니라 검토 담당영역으로 연결합니다.</li>
-<li><b>위험 연결:</b> A→R 연결은 설비 위치·작업종류·노출조건이 일치할 때만 활성화합니다. 단순 키워드 일치만으로 현장 위험을 확정하지 않습니다.</li>
-<li><b>경보 판정:</b> AND/OR 조건, 지속시간, 복귀 임계값을 함께 적용합니다. 법정 기준·제조사 기준·현장 시범값을 별도 태그로 관리합니다.</li>
-<li><b>조치 및 피드백:</b> 승인된 통제조치 후 경보 해제 조건을 확인하고, 오경보·미탐지·실제 사고/아차사고를 기록해 규칙을 재검증합니다.</li>
-</ol>
-<p class="small">안전 핵심통제(예: 정비허가가 활성화된 상태에서 LOTO 미확인)는 다른 위험점수와 합산해 희석하지 않는 독립 고우선순위 규칙으로 처리합니다.</p>
+<h3 style="margin-top:22px">Edge 관계 그래프 — 화살표를 선택하세요</h3>
+<p class="sub">화살표는 방향성이 있는 관계입니다. 각 관계를 클릭하면 정의, 연결 조건, 판정 근거가 아래 상세 패널에 표시됩니다. 노드 간 관계는 인과관계와 검토 책임을 구분합니다.</p>
+<div class="edge-map">
+ <div class="edge-stage"><h4>① 원천 데이터 → Persona / 사고</h4>
+  <button class="edge-link" data-edge="e1"><b>Hugging Face</b><span class="edge-arrow">⟶</span><b>P1~P8</b><small>CLASSIFIED_AS</small></button>
+  <button class="edge-link" data-edge="e2"><b>KOSHA</b><span class="edge-arrow">⟶</span><b>A1~A7</b><small>TAGGED_AS</small></button>
+ </div>
+ <div class="edge-stage"><h4>② Persona → 산재 유형</h4>
+  <div class="edge-link-grid">
+   <button class="edge-link" data-edge="e3"><b>P1</b><span class="edge-arrow">⟶</span><b>A4·A5·A7</b><small>REVIEWS</small></button>
+   <button class="edge-link" data-edge="e4"><b>P2</b><span class="edge-arrow">⟶</span><b>A1·A2·A3·A6·A7</b><small>REVIEWS</small></button>
+   <button class="edge-link" data-edge="e5"><b>P3</b><span class="edge-arrow">⟶</span><b>A1·A4·A6</b><small>REVIEWS</small></button>
+   <button class="edge-link" data-edge="e6"><b>P4</b><span class="edge-arrow">⟶</span><b>A1~A7</b><small>REVIEWS</small></button>
+   <button class="edge-link" data-edge="e7"><b>P5</b><span class="edge-arrow">⟶</span><b>A1~A7</b><small>CONTROLS</small></button>
+   <button class="edge-link" data-edge="e8"><b>P6</b><span class="edge-arrow">⟶</span><b>A1·A3·A7</b><small>REVIEWS</small></button>
+   <button class="edge-link" data-edge="e9"><b>P7</b><span class="edge-arrow">⟶</span><b>A2·A5·A7</b><small>VERIFIES</small></button>
+   <button class="edge-link" data-edge="e10"><b>P8</b><span class="edge-arrow">⟶</span><b>A1~A7</b><small>COORDINATES</small></button>
+  </div>
+ </div>
+ <div class="edge-stage"><h4>③ 산재 유형 → 산업현장 Risk</h4>
+  <div class="edge-link-grid">
+   <button class="edge-link" data-edge="e11"><b>A1</b><span class="edge-arrow">⟶</span><b>R1</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e12"><b>A2</b><span class="edge-arrow">⟶</span><b>R2</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e13"><b>A3</b><span class="edge-arrow">⟶</span><b>R3</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e14"><b>A4</b><span class="edge-arrow">⟶</span><b>R4</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e15"><b>A5</b><span class="edge-arrow">⟶</span><b>R5</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e16"><b>A6</b><span class="edge-arrow">⟶</span><b>R6</b><small>CAN_MANIFEST_AS</small></button>
+   <button class="edge-link" data-edge="e17"><b>A7</b><span class="edge-arrow">⟶</span><b>R7</b><small>CAN_MANIFEST_AS</small></button>
+  </div>
+ </div>
+ <div class="edge-stage"><h4>④ Risk → 데이터·조치 / 설비 열화</h4>
+  <button class="edge-link" data-edge="e18"><b>R1~R7</b><span class="edge-arrow">⟶</span><b>센서·작업허가·LOTO</b><small>INDICATED_BY</small></button>
+  <button class="edge-link" data-edge="e19"><b>관측 신호</b><span class="edge-arrow">⟶</span><b>위험 경보</b><small>TRIGGERS</small></button>
+  <button class="edge-link" data-edge="e20"><b>R1~R7</b><span class="edge-arrow">⟶</span><b>통제조치</b><small>MITIGATED_BY</small></button>
+  <button class="edge-link" data-edge="e21"><b>운전·원료·검사 데이터</b><span class="edge-arrow">⟶</span><b>F1~F5</b><small>INDICATES_DEGRADATION</small></button>
+ </div>
+</div>
+<div class="ontology-detail edge-detail" id="edgeDetail" aria-live="polite">
+ <h3>Edge 정의 패널</h3><p>위 화살표 중 하나를 클릭하면 관계의 의미와 연결 조건이 여기에 표시됩니다.</p>
 </div>
 <h3 style="margin-top:20px">Threshold 출처·설정 원칙</h3>
 <ul>
@@ -231,6 +244,35 @@ const ontologyDetails={
  monitor:["감지 신호 · 통제조치","쉘 온도·진동·차압·잔여 두께·가스농도·작업자 위치·작업허가·LOTO 등 가용한 신호를 연결합니다. 핵심 통제 실패는 별도 하드 알림 후보입니다.","관계: INDICATED_BY / MITIGATED_BY / TRIGGERS_ALERT · 근거: 현장 센서·점검·절차 데이터 연결 후 검증해야 합니다. 현재 실시간 센서 연동은 없습니다."]
 };
 document.querySelectorAll(".graph-node").forEach(g=>g.addEventListener("click",()=>{document.querySelectorAll(".ontology-svg .node").forEach(n=>n.classList.remove("selected"));const rect=g.querySelector(".node");if(rect)rect.classList.add("selected");const d=ontologyDetails[g.dataset.node];if(d)document.getElementById("ontologyDetail").innerHTML="<h3>"+d[0]+"</h3><p>"+d[1]+"</p><p class='small'>"+d[2]+"</p>"}));
+
+const edgeDefinitions={
+e1:["Hugging Face → Persona 8개","CLASSIFIED_AS · 직무 기반 분류","occupation, professional_persona, skills 등 Persona 원천 필드에서 역할별 키워드와 가중 점수를 계산합니다. 역할별 최소 점수를 충족한 경우 해당 P노드에 연결하며, 복수 역할 동시 분류를 허용합니다.","분류 필드 원문, 매칭 키워드, 필드별 가중치, 분류 점수. 이는 직무 분류 근거이지 작업자의 사고확률이 아닙니다."],
+e2:["KOSHA → 산재 유형 7개","TAGGED_AS · 사고사례 유형 태깅","사고 제목·발생 개요·원인·예방대책에 유형별 핵심어 또는 동의어가 확인될 때 A노드에 연결합니다. 한 사고에 복수 유형 태그를 허용합니다.","KOSHA 원천 레코드, 일치 문구, 태깅 규칙·신뢰도. KOSHA 공식 분류와 프로젝트 분류체계는 구분합니다."],
+e3:["P1 → A4·A5·A7","REVIEWS · 원료·재료 전문 검토","원료·재료의 조성, 반응성, 분진·유해성 또는 취급 특성이 화재·유해물질·수작업 노출 메커니즘과 관련될 때 연결합니다.","원료 성적서, MSDS, 입도·수분·조성, 작업방법."],
+e4:["P2 → A1·A2·A3·A6·A7","REVIEWS · 설비·정비 전문 검토","기계 구동·방호·정비·인양·에너지 격리 또는 정비 작업부하가 사고 경로에 관련될 때 연결합니다.","설비상태, 가드·인터록, 정비이력, LOTO, 인양계획."],
+e5:["P3 → A1·A4·A6","REVIEWS · 전기·계장 전문 검토","전기·PLC·센서·인터록·검지기·자동 재기동 신호가 사고 경로에 관여할 때 연결합니다.","PLC 이벤트, 인터록 로그, 전압·누설전류, 가스검지기 상태."],
+e6:["P4 → A1~A7","REVIEWS · 생산·운전 전문 검토","기동·정지·운전모드·생산부하·비정상 운전 또는 작업순서가 위험 노출조건을 바꿀 때 연결합니다.","운전모드, 생산량, 작업표준, 알람·운전 이력."],
+e7:["P5 → A1~A7","CONTROLS · 안전통제 검토","위험성평가·작업허가·보호구·출입통제·비상대응 등 예방통제의 적정성을 검토할 때 연결합니다.","위험성평가서, 작업허가서, 점검표, 교육·비상훈련 기록."],
+e8:["P6 → A1·A3·A7","REVIEWS · 물류·인양 전문 검토","차량·보행자 동선, 하역·운송·인양 또는 중량물 수작업이 존재할 때 연결합니다.","차량 위치·속도, 크레인 하중, 동선계획, 작업인원."],
+e9:["P7 → A2·A5·A7","VERIFIES · 품질·검사 검증","측정·검사·시료채취·NDT 등 검사 작업이 고소·유해환경·반복동작 노출을 동반할 때 연결합니다.","검사작업허가, 측정값, 검사절차, 노출시간."],
+e10:["P8 → A1~A7","COORDINATES · 관리·감독 조정","도급·교대·동시작업·작업간섭·감독공백·인력부족이 통제 실패에 영향을 줄 때 연결합니다.","작업조정 기록, 교대일지, 도급작업계획, 감독자 배치."],
+e11:["A1 → R1","CAN_MANIFEST_AS · 협착 위험 발현","회전·이송부 접근 또는 정비 중 구동 가능성이 있고 방호·인터록·LOTO 통제가 불충분할 때 연결합니다.","가드 상태, 위험부 속도, 정비허가, LOTO 확인. 예시 조건: 방호문 열림 AND 위험부 속도>0 rpm."],
+e12:["A2 → R2","CAN_MANIFEST_AS · 추락 위험 발현","고소·개구부 작업 중 추락방호가 없거나 작업자 접근이 통제되지 않을 때 연결합니다.","작업 위치, 난간·개구부 방호, 안전대 체결, 작업허가."],
+e13:["A3 → R3","CAN_MANIFEST_AS · 충돌·낙하 위험 발현","차량·보행자 동선 중첩, 인양물 하부 진입, 충돌예측시간 또는 정격하중 조건이 위험 기준에 도달할 때 연결합니다.","위치·속도, TTC, 크레인 하중률, 출입구역. TTC·하중 경보값은 현장 검증 대상입니다."],
+e14:["A4 → R4","CAN_MANIFEST_AS · 화재·폭발 위험 발현","가연성가스 누출·농도 상승 또는 고온·점화원·용융물 비산 조건이 함께 존재할 때 연결합니다.","%LEL, 가스압력·유량, 화염·온도, 작업허가."],
+e15:["A5 → R5","CAN_MANIFEST_AS · 질식·유해가스 위험 발현","밀폐공간·덕트·피트 진입 중 산소·유해가스 농도가 적정공기 기준을 벗어날 때 연결합니다.","O₂, CO, H₂S, CO₂, 환기상태, 진입허가."],
+e16:["A6 → R6","CAN_MANIFEST_AS · 감전·잔류에너지 위험 발현","전기·유체·중력 등 위험에너지 격리 후 무전압·잔류에너지 제거가 확인되지 않을 때 연결합니다.","검전, LOTO, 접지, 차단기·누전차단기 상태."],
+e17:["A7 → R7","CAN_MANIFEST_AS · 근골격 부담 위험 발현","중량물·반복동작·불리한 자세·장시간 작업이 작업별 인간공학 관리기준을 초과할 때 연결합니다.","중량·빈도·시간, 자세평가, 작업자 증상·유해요인조사."],
+e18:["R1~R7 → 관측 신호","INDICATED_BY · 위험 관측","위험별 센서·설비상태·작업허가·작업자 위치 데이터가 유효하고 시간 동기화될 때 연결합니다.","센서 교정·통신상태·타임스탬프·결측 여부. 신호가 없다는 사실을 위험이 없다는 뜻으로 해석하지 않습니다."],
+e19:["관측 신호 → 위험 경보","TRIGGERS · 조건부 경보 발생","정의된 AND/OR 조건과 임계값이 충족되고, 필요한 지속시간·히스테리시스 조건까지 충족되면 경보 상태로 전이합니다.","Threshold, 지속시간, 복귀 임계값, 신호 신뢰도. 법정 기준·제조사 기준·현장 시범값을 구분합니다."],
+e20:["R1~R7 → 통제조치","MITIGATED_BY · 위험 저감","경보 등급과 승인된 절차에 따라 작업중지·접근제한·에너지 격리·환기·보조장비·재평가를 연결합니다.","현장 비상절차, 안전관리자 승인, 인터록 권한. 자동 작업중지는 별도 안전검증 전제 없이는 실행하지 않습니다."],
+e21:["운전·원료·검사 데이터 → F1~F5","INDICATES_DEGRADATION · 설비 열화 지시","온도·조성·마모·열사이클·결함 데이터가 설비별 승인 운전창 또는 검사 한계를 벗어날 때 연결합니다.","설비 사양, 내화물 grade, 설계 최소두께, 열화상·검사 이력."]
+};
+document.querySelectorAll(".edge-link").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".edge-link").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");
+ const d=edgeDefinitions[btn.dataset.edge];if(!d)return;
+ document.getElementById("edgeDetail").innerHTML="<h3>"+d[0]+"</h3><p><b>관계:</b> "+d[1]+"</p><p><b>연결 규칙:</b> "+d[2]+"</p><p class='small'><b>판정 근거:</b> "+d[3]+"</p>";
+}));
 const roles=[
 {id:"process_materials",name:"공정·원료·재료 분석",focus:"원료 성상·조성·반응성·열·물질수지",lens:"원료·공정 편차 → 이상상태·열화",kw:["공정","화학","재료","금속","야금","원료","광물","슬래그","회분","소재","열역학","반응","제련","소성","process","chemical","materials","metallurgy","raw material"],w:{"occupation":4,"professional_persona":4,"skills_and_expertise_list":3,"skills_and_expertise":2,"detailed_persona":2,"career_goals_and_ambitions":1,"persona":1}},
 {id:"equipment_maintenance",name:"설비·기계·정비",focus:"회전·구동부·압력·유체설비·진동·정비",lens:"설비 고장·방호 실패·에너지 격리 미흡",kw:["기계","설비","정비","보전","회전","펌프","밸브","베어링","기어","용접","배관","압력용기","크레인","지게차","maintenance","mechanical","equipment","rotating","pump","valve"]},
