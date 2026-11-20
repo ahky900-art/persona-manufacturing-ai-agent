@@ -1,0 +1,457 @@
+{
+  "schema_version": "1.0.0",
+  "as_of": "2026-11-20",
+  "status": "initial_evidence_registry_site_validation_pending",
+  "principles": {
+    "preserve_official_source_fields": true,
+    "persona_is_review_lens_not_cause": true,
+    "allow_many_to_many_edges": true,
+    "unverified_confidence_is_null": true,
+    "unproven_threshold_is_unset": true,
+    "separate_worker_safety_from_refractory_integrity": true
+  },
+  "sources": [
+    {
+      "id": "SRC-KOSHA-ACCIDENT-20260903",
+      "type": "public_dataset",
+      "publisher": "한국산업안전보건공단",
+      "title": "산업재해 사례(업무상 사고사례)",
+      "url": "https://www.data.go.kr/data/15163146/fileData.do",
+      "supports": [
+        "accident_record",
+        "official_accident_type",
+        "work_activity",
+        "equipment",
+        "hazard_factor",
+        "prevention_action"
+      ],
+      "status": "catalog_verified_schema_mapping_pending"
+    },
+    {
+      "id": "SRC-KOSHA-RISK-GUIDE-2026",
+      "type": "regulation",
+      "publisher": "고용노동부",
+      "title": "사업장 위험성평가에 관한 지침, 고용노동부고시 제2026-73호",
+      "effective_date": "2026-11-04",
+      "url": "https://www.law.go.kr/admRulLsInfoP.do?admRulSeq=2100000288038",
+      "supports": [
+        "hazard_identification",
+        "risk_estimation",
+        "risk_acceptability",
+        "control_action"
+      ],
+      "status": "reference_identified_current_revision_and_clause_mapping_must_be_checked_before_production",
+      "notes": "Do not treat this record as a verified numeric scoring formula or universal risk acceptance threshold."
+    },
+    {
+      "id": "SRC-KOSHA-SAFETY-RULE-618",
+      "type": "regulation",
+      "publisher": "고용노동부",
+      "title": "산업안전보건기준에 관한 규칙 제618조(정의), 2026-03-02 시행본",
+      "url": "https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1033350811",
+      "supports": [
+        "confined_space",
+        "oxygen_deficiency",
+        "adequate_air_threshold"
+      ],
+      "status": "article_618_current_text_verified",
+      "effective_date": "2026-03-02"
+    },
+    {
+      "id": "SRC-OSHA-1910-147",
+      "type": "regulation",
+      "publisher": "OSHA",
+      "title": "29 CFR 1910.147 Control of hazardous energy",
+      "url": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.147",
+      "supports": [
+        "maintenance_activity",
+        "energy_isolation",
+        "lockout_tagout",
+        "unexpected_startup"
+      ],
+      "status": "source_verified_foreign_reference_not_korean_law"
+    },
+    {
+      "id": "SRC-OSHA-1910-212",
+      "type": "regulation",
+      "publisher": "OSHA",
+      "title": "29 CFR 1910.212 General requirements for all machines",
+      "url": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.212",
+      "supports": [
+        "rotating_parts",
+        "ingoing_nip_points",
+        "machine_guarding"
+      ],
+      "status": "source_verified_foreign_reference_not_korean_law"
+    },
+    {
+      "id": "SRC-BF-REFRACTORY-REVIEW-2022",
+      "type": "peer_reviewed_review",
+      "title": "Erosion Behavior and Longevity Technologies of Refractory Linings in Blast Furnaces for Ironmaking: A Review",
+      "doi": "10.1002/srin.202200266",
+      "url": "https://doi.org/10.1002/srin.202200266",
+      "supports": [
+        "blast_furnace_refractory",
+        "physical_damage",
+        "chemical_corrosion",
+        "mechanical_erosion"
+      ],
+      "status": "abstract_verified"
+    },
+    {
+      "id": "SRC-INCINERATOR-CORROSION-2024",
+      "type": "peer_reviewed_article",
+      "title": "Mechanism of coupling corrosion caused by flue gas and deposits in municipal solid waste incinerator: Roles of H2O(g), HCl, and SO2",
+      "doi": "10.1016/j.corsci.2024.111933",
+      "url": "https://doi.org/10.1016/j.corsci.2024.111933",
+      "supports": [
+        "incinerator_refractory_corrosion",
+        "H2O",
+        "HCl",
+        "SO2",
+        "alkali_salts",
+        "deposit_interaction"
+      ],
+      "status": "abstract_verified"
+    },
+    {
+      "id": "SRC-ROTARY-KILN-THICKNESS-2026",
+      "type": "peer_reviewed_article",
+      "title": "A soft sensing approach driven by data and model for estimating internal temperature and refractory lining thickness in rotary kilns",
+      "doi": "10.1016/j.measurement.2026.121405",
+      "url": "https://doi.org/10.1016/j.measurement.2026.121405",
+      "supports": [
+        "rotary_kiln",
+        "shell_temperature",
+        "internal_temperature_estimation",
+        "lining_thickness_estimation"
+      ],
+      "status": "abstract_verified"
+    },
+    {
+      "id": "SRC-BF-HEARTH-ISIJ-2016",
+      "type": "peer_reviewed_article",
+      "title": "Analysis of Blast Furnace Hearth Sidewall Erosion and Protective Layer Formation",
+      "url": "https://www.jstage.jst.go.jp/article/isijinternational/56/11/56_ISIJINT-2016-168/_html/-char/en",
+      "supports": [
+        "blast_furnace_hearth",
+        "oxidation",
+        "alkali_attack",
+        "CO_attack",
+        "thermal_stress",
+        "hot_metal_slag_dissolution"
+      ],
+      "status": "article_page_verified"
+    }
+  ],
+  "node_classes": [
+    {
+      "class": "PersonaRole",
+      "basis": "Hugging Face synthetic persona occupational fields; project-defined taxonomy",
+      "not_for": [
+        "individual accident probability",
+        "personality inference",
+        "worker competency rating"
+      ]
+    },
+    {
+      "class": "AccidentRecord",
+      "basis": "KOSHA original record; retain original identifiers and columns"
+    },
+    {
+      "class": "OfficialAccidentType",
+      "basis": "exact source field/code from current KOSHA schema; never infer code"
+    },
+    {
+      "class": "AnalyticalHazardTag",
+      "basis": "project multi-label analysis mapping from accident narrative; not official classification"
+    },
+    {
+      "class": "WorkActivity",
+      "basis": "explicit activity in accident narrative, permit, or task record"
+    },
+    {
+      "class": "Equipment",
+      "basis": "explicit equipment in accident narrative, equipment master, or validated plant record"
+    },
+    {
+      "class": "HazardousCondition",
+      "basis": "regulation, risk assessment, incident investigation, or approved procedure"
+    },
+    {
+      "class": "DamageMechanism",
+      "basis": "peer-reviewed literature and material/operating conditions"
+    },
+    {
+      "class": "DamageMode",
+      "basis": "inspection, failure analysis, maintenance record, or literature"
+    },
+    {
+      "class": "ObservableSignal",
+      "basis": "sensor specification, equipment design, inspection method, or validated literature"
+    },
+    {
+      "class": "Threshold",
+      "basis": "law/regulation, OEM/design, approved site limit, or validated statistical model"
+    }
+  ],
+  "edge_types": [
+    {
+      "relation": "DERIVED_FROM",
+      "requires": [
+        "source_id",
+        "source_record_id",
+        "source_field"
+      ]
+    },
+    {
+      "relation": "HAS_OFFICIAL_TYPE",
+      "requires": [
+        "source_id",
+        "source_record_id",
+        "source_field",
+        "official_code_or_label"
+      ]
+    },
+    {
+      "relation": "TAGGED_AS",
+      "requires": [
+        "source_id",
+        "source_record_id",
+        "evidence_quote_or_field",
+        "taxonomy_version",
+        "review_status"
+      ]
+    },
+    {
+      "relation": "REVIEW_LENS_FOR",
+      "requires": [
+        "persona_source_fields",
+        "matched_terms",
+        "taxonomy_version",
+        "review_status"
+      ],
+      "forbidden_semantics": [
+        "CAUSES",
+        "PREDICTS"
+      ]
+    },
+    {
+      "relation": "OCCURS_DURING",
+      "requires": [
+        "source_id",
+        "source_record_id",
+        "evidence_quote_or_field"
+      ]
+    },
+    {
+      "relation": "INVOLVES_EQUIPMENT",
+      "requires": [
+        "source_id",
+        "source_record_id",
+        "explicit_equipment_evidence",
+        "review_status"
+      ]
+    },
+    {
+      "relation": "HAS_HAZARD",
+      "requires": [
+        "source_id",
+        "evidence_quote_or_field",
+        "condition"
+      ]
+    },
+    {
+      "relation": "CAN_LEAD_TO",
+      "requires": [
+        "source_id",
+        "evidence_quote_or_field",
+        "condition",
+        "review_status"
+      ]
+    },
+    {
+      "relation": "DRIVES_MECHANISM",
+      "requires": [
+        "source_id",
+        "process_condition",
+        "material_or_equipment_scope"
+      ]
+    },
+    {
+      "relation": "CAUSES_DAMAGE_MODE",
+      "requires": [
+        "source_id",
+        "material_scope",
+        "operating_condition",
+        "review_status"
+      ]
+    },
+    {
+      "relation": "OBSERVED_BY",
+      "requires": [
+        "signal_specification_or_inspection_method",
+        "unit",
+        "location_or_zone"
+      ]
+    },
+    {
+      "relation": "GOVERNED_BY_THRESHOLD",
+      "requires": [
+        "threshold_id",
+        "source_id",
+        "unit",
+        "scope",
+        "approval_status"
+      ]
+    },
+    {
+      "relation": "TRIGGERS_ALERT",
+      "requires": [
+        "approved_logic",
+        "persistence_or_delay",
+        "response_action",
+        "reset_condition"
+      ]
+    },
+    {
+      "relation": "MITIGATED_BY",
+      "requires": [
+        "source_id",
+        "control_or_procedure",
+        "applicability"
+      ]
+    }
+  ],
+  "threshold_examples": [
+    {
+      "id": "THR-CONFINED-O2-LOW",
+      "signal": "oxygen_volume_fraction",
+      "limit_type": "LEGAL_DEFINITION",
+      "operator": "<",
+      "value": 18,
+      "unit": "vol%",
+      "source_id": "SRC-KOSHA-SAFETY-RULE-618",
+      "source_clause": "제618조 산소결핍 정의",
+      "status": "source_verified_application_and_alarm_logic_review_required"
+    },
+    {
+      "id": "THR-CONFINED-O2-ADEQUATE-UPPER",
+      "signal": "oxygen_volume_fraction",
+      "limit_type": "LEGAL_DEFINITION",
+      "operator": ">=",
+      "value": 23.5,
+      "unit": "vol%",
+      "source_id": "SRC-KOSHA-SAFETY-RULE-618",
+      "source_clause": "제618조 적정공기 범위 상한(미만)",
+      "status": "source_verified_not_a_standalone_evacuation_rule"
+    },
+    {
+      "id": "THR-CONFINED-CO",
+      "signal": "carbon_monoxide",
+      "limit_type": "LEGAL_DEFINITION",
+      "operator": ">=",
+      "value": 30,
+      "unit": "ppm",
+      "source_id": "SRC-KOSHA-SAFETY-RULE-618",
+      "source_clause": "제618조 적정공기 기준",
+      "status": "source_verified_not_a_standalone_alarm_delay_policy"
+    },
+    {
+      "id": "THR-CONFINED-H2S",
+      "signal": "hydrogen_sulfide",
+      "limit_type": "LEGAL_DEFINITION",
+      "operator": ">=",
+      "value": 10,
+      "unit": "ppm",
+      "source_id": "SRC-KOSHA-SAFETY-RULE-618",
+      "source_clause": "제618조 적정공기 기준",
+      "status": "source_verified_not_a_standalone_alarm_delay_policy"
+    },
+    {
+      "id": "THR-CONFINED-CO2",
+      "signal": "carbon_dioxide",
+      "limit_type": "LEGAL_DEFINITION",
+      "operator": ">=",
+      "value": 1.5,
+      "unit": "vol%",
+      "source_id": "SRC-KOSHA-SAFETY-RULE-618",
+      "source_clause": "제618조 적정공기 기준",
+      "status": "source_verified_not_a_standalone_alarm_delay_policy"
+    }
+  ],
+  "example_edges": [
+    {
+      "edge_id": "EDGE-ROTATING-NIP-001",
+      "from": "rotating_part",
+      "relation": "HAS_HAZARD",
+      "to": "ingoing_nip_point_or_entanglement",
+      "source_id": "SRC-OSHA-1910-212",
+      "source_record_id": null,
+      "evidence_quote_or_field": "1910.212(a)(1): point of operation, ingoing nip points, rotating parts",
+      "condition": [
+        "machine_in_operation",
+        "person_can_access_hazard_zone"
+      ],
+      "method": "regulatory_rule_mapping",
+      "confidence": null,
+      "review_status": "source_verified_site_review_pending"
+    },
+    {
+      "edge_id": "EDGE-LOTO-ENERGY-001",
+      "from": "maintenance_activity",
+      "relation": "REQUIRES_ENERGY_ISOLATION",
+      "to": "verified_energy_isolation",
+      "source_id": "SRC-OSHA-1910-147",
+      "source_record_id": null,
+      "evidence_quote_or_field": "1910.147(c)(1), (d)(3)-(d)(6)",
+      "condition": [
+        "servicing_or_maintenance",
+        "hazardous_energy_present"
+      ],
+      "method": "regulatory_rule_mapping",
+      "confidence": null,
+      "review_status": "source_verified_foreign_reference_site_procedure_review_pending"
+    },
+    {
+      "edge_id": "EDGE-PERSONA-REVIEW-001",
+      "from": "equipment_maintenance_persona",
+      "relation": "REVIEW_LENS_FOR",
+      "to": "entanglement_hazard",
+      "source_id": "PROJECT-PERSONA-TAXONOMY",
+      "source_record_id": null,
+      "evidence_quote_or_field": "occupation/skills field keyword matches: maintenance, mechanical, equipment, rotating",
+      "condition": [
+        "persona_record_has_relevant_occupational_evidence"
+      ],
+      "method": "weighted_keyword_heuristic",
+      "confidence": null,
+      "review_status": "candidate_expert_review_pending"
+    },
+    {
+      "edge_id": "EDGE-INCINERATOR-CORROSION-001",
+      "from": "HCl_SO2_alkali_salt_deposit_environment",
+      "relation": "DRIVES_MECHANISM",
+      "to": "coupled_high_temperature_corrosion",
+      "source_id": "SRC-INCINERATOR-CORROSION-2024",
+      "source_record_id": null,
+      "evidence_quote_or_field": "study highlights H2O/HCl/SO2 and alkali salts influence deposit/flue-gas coupled corrosion",
+      "condition": [
+        "waste_incinerator",
+        "compatible_gas_deposit_composition",
+        "refractory_or_tube_material_scope_verified"
+      ],
+      "method": "literature_mechanism_mapping",
+      "confidence": null,
+      "review_status": "literature_supported_site_material_validation_pending"
+    }
+  ],
+  "excluded_assumptions": [
+    "Persona causes accident type",
+    "keyword match proves equipment involvement",
+    "risk score bands 15/35/60 are legal thresholds",
+    "one refractory shell temperature limit applies to all kilns",
+    "literature mechanism applies to every refractory composition and operating condition",
+    "a legal adequate-air boundary alone defines all alarm timing, evacuation, and re-entry logic"
+  ]
+}
