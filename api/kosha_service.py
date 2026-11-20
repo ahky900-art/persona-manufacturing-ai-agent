@@ -28,7 +28,7 @@ def accidents(page: int = Query(1, ge=1), per_page: int = Query(100, ge=1, le=50
 @app.get("/api/huggingface/personas")
 def huggingface_personas(
     offset: int = Query(0, ge=0, le=1000000),
-    length: int = Query(10, ge=1, le=100)
+    length: int = Query(100, ge=1, le=100)
 ):
     """Server-side proxy for the public Nemotron-Personas-Korea dataset.
     Keeps Hugging Face requests off the browser to avoid client-side CORS/network failures.
