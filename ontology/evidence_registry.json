@@ -46,14 +46,15 @@
       "id": "SRC-KOSHA-SAFETY-RULE-618",
       "type": "regulation",
       "publisher": "고용노동부",
-      "title": "산업안전보건기준에 관한 규칙 제618조 및 밀폐공간 관련 조문",
-      "url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=280187",
+      "title": "산업안전보건기준에 관한 규칙 제618조(정의), 2026-03-02 시행본",
+      "url": "https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1033350811",
       "supports": [
         "confined_space",
         "oxygen_deficiency",
         "adequate_air_threshold"
       ],
-      "status": "source_verified"
+      "status": "article_618_current_text_verified",
+      "effective_date": "2026-03-02"
     },
     {
       "id": "SRC-OSHA-1910-147",
