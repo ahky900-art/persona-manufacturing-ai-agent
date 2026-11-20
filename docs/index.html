@@ -303,7 +303,7 @@ $("safetyCards").innerHTML=safety.map(s=>'<div class="card"><h3>'+s[0]+'</h3><p>
   let ontologyEvidence={sources:[]},ontologyEvidenceLoaded=false;
   async function loadOntologyEvidence(){try{const r=await fetch("./ontology/evidence_registry.json",{headers:{"Accept":"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);ontologyEvidence=await r.json();ontologyEvidenceLoaded=true;}catch(e){ontologyEvidenceLoaded=false;console.warn("Ontology evidence registry:",e);}}
   function renderEvidenceGraph(name,roleCounts,matchedTags,rows,matchedCases){
- const W=1900,H=760,xs=[18,330,642,954,1266,1578],nw=275,nh=68,nodes=[],edges=[],caseEvidence={};
+ const W=1900,H=820,xs=[18,330,642,954,1266,1578],nw=275,nh=68,nodes=[],edges=[],caseEvidence={};
  matchedCases.forEach((r,i)=>accidentTagsI(r).forEach(t=>{(caseEvidence[t.name]??=[]).push({r,terms:t.matched,i});}));
  const add=(id,col,title,sub,kind,detail)=>nodes.push({id,col,title,sub,kind,detail,x:xs[col],y:65+nodes.filter(n=>n.col===col).length*91,w:nw,h:nh});
  const personas=[];
