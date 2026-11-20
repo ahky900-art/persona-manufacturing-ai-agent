@@ -422,11 +422,35 @@ const all=koshaRows.filter(r=>accidentHits(r).length).slice(0,25);
 $api("liveClassifiedCases").innerHTML=all.length?all.map((r,i)=>'<details class="api-record"><summary>'+(i+1)+'. '+escApi(r["재해구분(제목)"]||r["재해구분"]||"사고 제목 미기재")+' · '+accidentHits(r).map(x=>escApi(x.name)).join(" / ")+'</summary><p>'+accidentHits(r).map(x=>escApi(x.name)+": "+escApi(x.matched.join(", "))).join(" · ")+'</p><p><b>개요:</b> '+escApi(r["재해발생 개요(내용)"]||"미기재")+'</p><p><b>원인:</b> '+escApi(r["재해발생 원인"]||"미기재")+'</p></details>').join(""):'<div class="result">현재 표본에서 매칭된 사례가 없습니다.</div>';
 }
 async function loadHf(){
-hfRows=[];const splitRes=await fetch("https://datasets-server.huggingface.co/splits?dataset="+encodeURIComponent(HF_DATASET));
-if(!splitRes.ok)throw new Error("Hugging Face splits HTTP "+splitRes.status);
-const sd=await splitRes.json();hfSplit=(sd.splits||[]).find(x=>x.config==="default"&&x.split==="train");if(!hfSplit)throw new Error("default/train split 없음");
-let offset=0;while(offset<100){let take=Math.min(10,100-offset),batch=null;while(take>=1){const url="https://datasets-server.huggingface.co/rows?dataset="+encodeURIComponent(hfSplit.dataset)+"&config="+encodeURIComponent(hfSplit.config)+"&split="+encodeURIComponent(hfSplit.split)+"&offset="+offset+"&length="+take;const res=await fetch(url);if(res.ok){const d=await res.json();batch=(d.rows||[]).map(x=>x.row||x);break}const body=await res.text();if(res.status===422&&take>1){take=Math.max(1,Math.floor(take/2));continue}throw new Error("Hugging Face rows HTTP "+res.status+" "+body.slice(0,160))}if(!batch||!batch.length)break;hfRows.push(...batch);offset+=batch.length;if(batch.length<take)break}
-if(!hfRows.length)throw new Error("Hugging Face 조회 0건");
+hfRows=[];
+/* Dataset card confirms config=default, split=train. Skip the extra /splits
+   discovery request so a metadata endpoint failure cannot block row retrieval. */
+hfSplit={dataset:HF_DATASET,config:"default",split:"train"};
+let offset=0;
+while(offset<100){
+ let take=Math.min(10,100-offset),batch=null,lastError="";
+ while(take>=1){
+  const params=new URLSearchParams({dataset:HF_DATASET,config:"default",split:"train",offset:String(offset),length:String(take)});
+  const url="https://datasets-server.huggingface.co/rows?"+params.toString();
+  let res;
+  try{res=await fetch(url,{headers:{Accept:"application/json"},cache:"no-store"})}
+  catch(e){throw new Error("네트워크/CORS 오류: "+(e&&e.message?e.message:String(e)))}
+  if(res.ok){
+   let d;try{d=await res.json()}catch(e){throw new Error("응답 JSON 파싱 실패: "+(e&&e.message?e.message:String(e)))}
+   if(!Array.isArray(d.rows))throw new Error("rows 배열 누락: "+JSON.stringify(d).slice(0,180));
+   batch=d.rows.map(x=>x.row||x);break;
+  }
+  const body=(await res.text()).slice(0,220);
+  lastError="HTTP "+res.status+" "+body;
+  if((res.status===422||res.status===413)&&take>1){take=Math.max(1,Math.floor(take/2));continue}
+  throw new Error("Hugging Face rows "+lastError);
+ }
+ if(!batch)throw new Error("Hugging Face rows 조회 실패: "+lastError);
+ if(!batch.length)break;
+ hfRows.push(...batch);offset+=batch.length;
+ if(batch.length<take)break;
+}
+if(!hfRows.length)throw new Error("Hugging Face 조회 0건: default/train 응답에 레코드가 없습니다.");
 }
 async function loadKosha(){
 koshaRows=[];let page=1,per=100,totalPages=1;
