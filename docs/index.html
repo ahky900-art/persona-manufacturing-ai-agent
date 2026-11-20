@@ -59,6 +59,24 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .edge-link.edge-muted{opacity:.24}
 .edge-link.edge-related{border-color:#2257a5;background:#eaf1fc;box-shadow:0 0 0 2px #2257a51c}
 .ontology-node[data-ontology-node]:focus-visible{outline:3px solid #2257a5;outline-offset:2px}
+
+/* Ontology single-screen graph + inspector */
+.ontology-workspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(350px,.85fr);gap:16px;align-items:start;margin-top:14px}
+.ontology-graph-column{min-width:0;max-height:calc(100vh - 190px);overflow:auto;padding:0 8px 10px 0;overscroll-behavior:contain}
+.ontology-inspector-column{min-width:0;max-height:calc(100vh - 190px);overflow:auto;position:sticky;top:12px;overscroll-behavior:contain}
+.ontology-inspector-sticky{display:flex;flex-direction:column;gap:10px}
+.ontology-inspector-sticky>h3{margin:0!important}
+.ontology-inspector-sticky .edge-map{grid-template-columns:1fr;gap:8px;margin:0}
+.ontology-inspector-sticky .edge-stage{padding:9px}
+.ontology-inspector-sticky .edge-link-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ontology-inspector-sticky .edge-detail,.ontology-inspector-sticky #ontologyDetail{margin:0;max-height:230px;overflow:auto}
+.ontology-graph-column .ontology-flow{margin-top:0}
+.ontology-graph-column .ontology-risk-grid{margin-bottom:12px}
+.ontology-graph-column .ontology-detail{display:none}
+.ontology-inspector-sticky .edge-detail{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface,#fff)}
+.ontology-inspector-sticky #ontologyDetail{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface,#fff)}
+@media(max-width:1050px){.ontology-workspace{grid-template-columns:minmax(0,1fr) minmax(300px,.8fr)}}
+@media(max-width:760px){.ontology-workspace{grid-template-columns:1fr}.ontology-graph-column{max-height:none;overflow:visible;padding-right:0}.ontology-inspector-column{position:relative;top:auto;max-height:none;overflow:visible}.ontology-graph-column .ontology-detail{display:block}.ontology-inspector-sticky .edge-map{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="eyebrow">MANUFACTURING SAFETY INTELLIGENCE · RESEARCH MVP</div><h1>Persona Manufacturing AI Safety Agent</h1><p>직무 기반 Persona 관점 → 산업재해 포커스 → 설비별 손상 메커니즘 → 관측 후보를 연결하는 설명 가능한 대시보드</p></header>
 <main>
@@ -116,7 +134,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <h2>온톨로지 지식 그래프</h2>
 <p class="sub">원천 데이터 → Persona 8개 → 산재 유형 7개 → 산업현장 Risk 7개로 노드를 분리했습니다. 각 노드는 검토 관점·사고 유형·현장 위험을 개별 식별하며, 임계값은 법정 기준과 현장 시범 설정값을 구분합니다.</p>
 <div class="ontology-legend"><span><i class="legend-dot" style="background:#dceafe"></i>원천 데이터</span><span><i class="legend-dot" style="background:#e5f5ec"></i>Persona 8개</span><span><i class="legend-dot" style="background:#fff0d8"></i>산재 7개</span><span><i class="legend-dot" style="background:#fce5e5"></i>산업현장 Risk·Threshold</span></div>
-<div class="ontology-flow">
+
+<div class="ontology-workspace">
+ <div class="ontology-graph-column"><div class="ontology-flow">
  <div class="ontology-lane source-lane">
   <h3>① 원천 데이터</h3>
   <article class="ontology-node source-node" data-ontology-node="hf"><b>Hugging Face</b><p>Nemotron-Personas-Korea</p><small>occupation · professional_persona · skills · detailed_persona</small></article>
@@ -166,7 +186,10 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <h3>노드와 Edge 해석</h3>
 <p>Persona는 작업자 개인의 성격·위험점수가 아니라 직무 전문성에 따라 위험을 검토하는 관점입니다. P노드가 A노드를 직접 발생시키는 인과관계가 아니라, 사고유형별 검토 책임과 전문영역을 연결합니다.</p>
 <p class="small">주요 Edge: HAS_FIELD → CLASSIFIED_AS(P1~P8) → REVIEWS(A1~A7) → CAN_OCCUR_IN(R1~R7) → INDICATED_BY(센서·작업허가·LOTO·검사) → MITIGATED_BY(방호·격리·출입통제·작업개선). F1~F5는 별도의 설비건전성 위험 경로입니다.</p>
-</div>
+</div></div>
+ <aside class="ontology-inspector-column">
+  <div class="ontology-inspector-sticky">
+   
 
 <h3 style="margin-top:22px">Edge 관계 그래프 — 화살표를 선택하세요</h3>
 <p class="sub">화살표는 방향성이 있는 관계입니다. 각 관계를 클릭하면 정의, 연결 조건, 판정 근거가 아래 상세 패널에 표시됩니다. 노드 간 관계는 인과관계와 검토 책임을 구분합니다.</p>
@@ -204,10 +227,16 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   <button class="edge-link" data-edge="e20"><b>R1~R7</b><span class="edge-arrow">⟶</span><b>통제조치</b><small>MITIGATED_BY</small></button>
   <button class="edge-link" data-edge="e21"><b>운전·원료·검사 데이터</b><span class="edge-arrow">⟶</span><b>F1~F5</b><small>INDICATES_DEGRADATION</small></button>
  </div>
-</div>
-<div class="ontology-detail edge-detail" id="edgeDetail" aria-live="polite">
+</div><div class="ontology-detail edge-detail" id="edgeDetail" aria-live="polite">
  <h3>Edge 정의 패널</h3><p>위 화살표 중 하나를 클릭하면 관계의 의미와 연결 조건이 여기에 표시됩니다.</p>
 </div>
+   <div class="ontology-detail" id="ontologyDetail">
+    <h3>노드 선택 정보</h3><p>왼쪽 그래프에서 노드를 선택하면 연결된 관계가 강조되고 이 영역에 연결 정보가 표시됩니다.</p>
+   </div>
+  </div>
+ </aside>
+</div>
+
 <h3 style="margin-top:20px">Threshold 출처·설정 원칙</h3>
 <ul>
 <li>밀폐공간 적정공기 수치(O₂ 18% 이상 23.5% 미만, CO 30 ppm 미만, H₂S 10 ppm 미만, CO₂ 1.5% 미만)는 산업안전보건기준에 관한 규칙 제618조 기준입니다. <a href="https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1025460877" target="_blank" rel="noopener">법령 원문</a></li>
